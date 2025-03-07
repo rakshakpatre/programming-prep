@@ -47,13 +47,33 @@ app.get("/api/notes", async (req, res) => {
     if (!user_id) return res.status(400).json({ error: "User ID is required" });
 
     try {
-        const [notes] = await db.query("SELECT * FROM notes WHERE user_id = ?", [user_id]);
+        const [notes] = await db.query("SELECT * FROM notes WHERE user_id = ? And IsActive = 1", [user_id]);
         res.json(notes);
     } catch (error) {
         console.error("Error fetching notes:", error);
         res.status(500).json({ error: "Failed to fetch notes" });
     }
 });
+
+app.delete("/api/notes/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        const [result] = await db.execute("Update notes Set IsActive = 0 WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        res.json({ message: "Note deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        res.status(500).json({ error: "Failed to delete note" });
+    }
+});
+
 
 
 
