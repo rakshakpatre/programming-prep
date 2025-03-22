@@ -24,8 +24,11 @@ const upload = multer({ storage });
 
 app.post("/api/notes/add", upload.single("file"), async (req, res) => {
     try {
-        const { title, content, user_id } = req.body;
+        const { title, content, user_id, isPublic } = req.body;
         const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+
+          // Convert isPublic from "true"/"false" string to integer (1 or 0)
+          const isPublicInt = isPublic === "true" ? 1 : 0;
 
         if (!title || !content || !user_id) {
             return res.status(400).json({ error: "All fields are required" });
@@ -33,10 +36,10 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
 
         const [result] = await db.execute(
             "INSERT INTO notes (title, content, user_id, file_path, isPublic) VALUES (?, ?, ?, ?, ?)",
-            [title, content, user_id, file_path, visibility]
+            [title, content, user_id, file_path, isPublicInt]
         );
 
-        res.json({ message: "File added successfully", noteId: result.insertId });
+        res.json({noteId: result.insertId, title, content, user_id, isPublic  });
     } catch (error) {
         console.error("Error adding note:", error);
         res.status(500).json({ error: "Internal Server Error" });

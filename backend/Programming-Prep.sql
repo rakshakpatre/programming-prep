@@ -41,6 +41,10 @@ CREATE TABLE IF NOT EXISTS QuizQuestions(
 select * from Quiz;
 
 -- Add is_public column to notes table for public/private visibility
-ALTER TABLE notes ADD COLUMN is_public BOOLEAN DEFAULT TRUE;
+ALTER TABLE notes ADD COLUMN isPublic BOOLEAN DEFAULT TRUE;
+ALTER TABLE notes ADD COLUMN view_count INT DEFAULT 0;
+ALTER TABLE notes ADD COLUMN download_count INT DEFAULT 0;
+ALTER TABLE notes ADD COLUMN other_user_view_count INT DEFAULT 0;
+ALTER TABLE notes ADD COLUMN other_user_download_count INT DEFAULT 0;
 
 select * from QuizQuestions;
