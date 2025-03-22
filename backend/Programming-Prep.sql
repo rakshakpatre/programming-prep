@@ -16,9 +16,14 @@ CREATE TABLE IF NOT EXISTS notes (
             content TEXT NOT NULL,
             user_id VARCHAR(255) NOT NULL,
             file_path VARCHAR(255),  -- Store file path here
+            view_count INT DEFAULT 0,  -- Track number of views
+            download_count INT DEFAULT 0,  -- Track number of downloads
             IsActive BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         );
 
 select * from Quiz;
+
+-- Add is_public column to notes table for public/private visibility
+ALTER TABLE notes ADD COLUMN is_public BOOLEAN DEFAULT TRUE;

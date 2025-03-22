@@ -8,7 +8,9 @@ const app = express();
 // const router = express.Router();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static("uploads")); 
+app.use("/uploads", express.static("uploads"));
+
+// ---------------------------- API to Register User ----------------------------
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -20,18 +22,23 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// ---------------------------- Add a new note----------------------------
+
 app.post("/api/notes/add", upload.single("file"), async (req, res) => {
     try {
-        const { title, content, user_id } = req.body;
-        const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+        const { title, content, user_id, isPublic } = req.body;
+        // console.log("Received isPublic:", isPublic); // Debugging log
+
+        const file_path = req.file ? req.file.path : null;
+        const visibility = isPublic === "1" ? 1 : 0; // Force correct conversion to integer
 
         if (!title || !content || !user_id) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
         const [result] = await db.execute(
-            "INSERT INTO notes (title, content, user_id, file_path) VALUES (?, ?, ?, ?)",
-            [title, content, user_id, file_path]
+            "INSERT INTO notes (title, content, user_id, file_path, isPublic) VALUES (?, ?, ?, ?, ?)",
+            [title, content, user_id, file_path, visibility]
         );
 
         res.json({ message: "File added successfully", noteId: result.insertId });
@@ -41,19 +48,42 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
     }
 });
 
-// ✅ Fetch Notes for Logged-in User
+
+
+//------------------Fetch Notes for Logged-in User--------------------------
+
 app.get("/api/notes", async (req, res) => {
     const { user_id } = req.query;
     if (!user_id) return res.status(400).json({ error: "User ID is required" });
 
     try {
-        const [notes] = await db.query("SELECT * FROM notes WHERE user_id = ? And IsActive = 1", [user_id]);
+        const [notes] = await db.query(
+            "SELECT * FROM notes WHERE user_id = ? AND IsActive = 1",
+            [user_id]
+        );
         res.json(notes);
     } catch (error) {
         console.error("Error fetching notes:", error);
         res.status(500).json({ error: "Failed to fetch notes" });
     }
 });
+
+
+
+app.get("/api/notes/public", async (req, res) => {
+    try {
+        const [publicNotes] = await db.query(
+            "SELECT * FROM notes WHERE isPublic = 1 AND IsActive = 1"
+        );
+        res.json(publicNotes);
+    } catch (error) {
+        console.error("Error fetching public notes:", error);
+        res.status(500).json({ error: "Failed to fetch public notes" });
+    }
+});
+
+
+//------------------------- Delete Notes -----------------------------
 
 app.delete("/api/notes/:id", async (req, res) => {
     const { id } = req.params;
@@ -77,6 +107,206 @@ app.delete("/api/notes/:id", async (req, res) => {
 
 
 
+//--------------------- Increment view count for a owner note Server code------------------------
+
+app.post("/api/notes/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // First check if the note exists and is active
+        const [notes] = await db.query("SELECT * FROM notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Get current view count or default to 0 if null
+        const currentViewCount = notes[0].view_count || 0;
+        const newViewCount = currentViewCount + 1;
+
+        // Update the view count
+        const [result] = await db.execute(
+            "UPDATE notes SET view_count = ? WHERE id = ?",
+            [newViewCount, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update view count" });
+        }
+
+        res.json({ message: "View count updated successfully", view_count: newViewCount });
+    } catch (error) {
+        console.error("Error updating view count:", error);
+        res.status(500).json({ error: "Failed to update view count" });
+    }
+});
+
+
+
+//--------------------- Increment view count for a other user note Server code------------------------
+
+app.post("/api/notes/public/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // Check if the note exists
+        const [notes] = await db.query("SELECT * FROM notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Update view count directly
+        const [result] = await db.execute(
+            "UPDATE notes SET other_user_view_count = other_user_view_count + 1 WHERE id = ?",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update view count" });
+        }
+
+        // Fetch the updated view count
+        const [[updatedNote]] = await db.query("SELECT other_user_view_count FROM notes WHERE id = ?", [id]);
+
+        res.json({
+            message: "View count updated successfully",
+            other_user_view_count: updatedNote.other_user_view_count
+        });
+    } catch (error) {
+        console.error("Error updating view count:", error);
+        res.status(500).json({ error: "Failed to update view count" });
+    }
+});
+
+
+
+
+//------------------ Increment download count for a note---------------------------
+
+app.post("/api/notes/:id/download", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // First check if the note exists and is active
+        const [notes] = await db.query("SELECT * FROM notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Get current download count or default to 0 if null
+        const currentDownloadCount = notes[0].download_count || 0;
+        const newDownloadCount = currentDownloadCount + 1;
+
+        // Update the download count
+        const [result] = await db.execute(
+            "UPDATE notes SET download_count = ? WHERE id = ?",
+            [newDownloadCount, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update download count" });
+        }
+
+        res.json({ message: "Download count updated successfully", download_count: newDownloadCount });
+    } catch (error) {
+        console.error("Error updating download count:", error);
+        res.status(500).json({ error: "Failed to update download count" });
+    }
+});
+
+//------------------ Increment download count for a Public note---------------------------
+
+app.post("/api/notes/public/:id/download", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // Check if the note exists
+        const [notes] = await db.query("SELECT * FROM notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Update download count directly
+        const [result] = await db.execute(
+            "UPDATE notes SET other_user_download_count = other_user_download_count + 1 WHERE id = ?",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update download count" });
+        }
+
+        // Fetch the updated download count
+        const [[updatedNote]] = await db.query("SELECT other_user_download_count FROM notes WHERE id = ?", [id]);
+
+        res.json({
+            message: "Download count updated successfully",
+            other_user_download_count: updatedNote.other_user_download_count
+        });
+    } catch (error) {
+        console.error("Error updating download count:", error);
+        res.status(500).json({ error: "Failed to update download count" });
+    }
+});
+
+
+
+//-------------------------------- API to Update Note -------------------------------------
+
+app.post("/api/notes/update-note", upload.single("file"), async (req, res) => {
+    const { id, title, content, isPublic } = req.body;
+    const file_path = req.file ? req.file.filename : null;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = isPublic === "true" ? 1 : 0;
+        
+        // Check if the note exists
+        const [notes] = await db.query("SELECT * FROM notes WHERE id = ?", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        let query = "UPDATE notes SET title=?, content=?, isPublic=? WHERE id=?";
+        let values = [title, content, isPublicInt, id];
+
+        if (file_path) {
+            query = "UPDATE notes SET title=?, content=?, isPublic=?, file_path=? WHERE id=?";
+            values = [title, content, isPublicInt, file_path, id];
+        }
+
+        const [result] = await db.execute(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update note" });
+        }
+
+        res.json({ message: "Note updated successfully!" });
+    } catch (error) {
+        console.error("Error updating note:", error);
+        res.status(500).json({ error: "Database update failed" });
+    }
+});
+
+
+
+
+//------------------ Add Quize From Admin ---------------------------
+
 app.post("/addQuiz", async (req, res) => {
     const { title, description, noOfQue } = req.body;
 
@@ -94,7 +324,6 @@ app.post("/addQuiz", async (req, res) => {
 
         const responseData = { message: "Quiz added successfully", id: result.insertId };
 
-        // Ensure headers haven't been sent yet
         if (!res.headersSent) {
             return res.status(200).json(responseData);
         } else {
@@ -104,7 +333,6 @@ app.post("/addQuiz", async (req, res) => {
     } catch (error) {
         console.error("Database Error:", error);
 
-        // Ensure headers haven't been sent yet
         if (!res.headersSent) {
             return res.status(500).json({ error: error.message });
         } else {
@@ -114,7 +342,8 @@ app.post("/addQuiz", async (req, res) => {
 });
 
 
-// Start Server
+//-------------------------- Start Server----------------------------
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

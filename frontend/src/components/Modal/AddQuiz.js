@@ -5,7 +5,7 @@ export default function AddQuiz() {
     const [title, setTitle] = useState("");
     const [noOfQue, setNoOfQue] = useState("");
     const [description, setDescription] = useState("");
-    const [loading, setLoading] = useState(false); // ✅ Loading State
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -14,7 +14,7 @@ export default function AddQuiz() {
             alert("All Fields are required");
             return;
         }
-        setLoading(true); // ✅ Show Loader
+        setLoading(true);
         const quiz = { title, description, noOfQue };
 
         try {
@@ -63,7 +63,7 @@ export default function AddQuiz() {
             console.error("Error adding quiz:", error);
             alert("Failed to add quiz: " + error.message);
         } finally {
-            setLoading(false); // ✅ Hide Loader
+            setLoading(false);
         }
     };
 
@@ -74,7 +74,6 @@ export default function AddQuiz() {
             setNoOfQue(value);
         }
     };
-
 
     return (
         <>

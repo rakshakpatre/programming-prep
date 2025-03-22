@@ -65,7 +65,7 @@ const Dashboard = () => {
                 <ThemeButton />
             </div>
             <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-5">
-                <h2 className="purple fw-bold">My Files</h2>
+                
                 <div className="row">
                     <DisplayFile />
                 </div>

@@ -53,7 +53,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import * as bootstrap from "bootstrap";
-window.bootstrap = bootstrap; // ✅ Manually attach Bootstrap to window
+window.bootstrap = bootstrap;
 
 export default function FileViewerModal({ modalRef, fileURL, title, content }) {
     // Function to generate Google Docs Viewer URL
