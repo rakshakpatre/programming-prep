@@ -50,7 +50,7 @@ export default function AddFile({ fetchNotes }) {
       setFile(null);
       setIsPublic(true); // Reset to public
       setFileInputKey(Date.now());
-      fetchNotes();
+
       const modalElement = document.getElementById("addFile");
       const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
       if (modalInstance) {
@@ -62,7 +62,7 @@ export default function AddFile({ fetchNotes }) {
         document.body.classList.remove("modal-open");
       }
 
-   
+      fetchNotes();
     } catch (error) {
       console.error("Error adding note:", error);
       // alert("Error adding note. Try again!");
@@ -131,3 +131,4 @@ export default function AddFile({ fetchNotes }) {
     </>
   )
 }
+
