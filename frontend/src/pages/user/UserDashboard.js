@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import Navbar from '../components/Navbar';
-import ThemeButton from '../components/ThemeButton';
-import DisplayFile from '../components/Display/DisplayFile';
-import AddFileModal from '../components/Modal/AddFile';
+import Navbar from '../../components/Navbar';
+import ThemeButton from '../../components/ThemeButton';
+import DisplayFile from '../../components/Display/DisplayFile';
+import AddFileModal from '../../components/Modal/AddFile';
 
 import FileIcon from '@mui/icons-material/NoteAdd';
 import LinkIcon from '@mui/icons-material/AddLink';
-import NotesIcon from '@mui/icons-material/Notes';
-import CodeIcon from '@mui/icons-material/Code';
+// import NotesIcon from '@mui/icons-material/Notes';
+// import CodeIcon from '@mui/icons-material/Code';
 
 const Dashboard = () => {
     const { isSignedIn, user } = useUser();
@@ -23,11 +23,11 @@ const Dashboard = () => {
 
     return (
         <div className="d-flex flex-column min-vh-100 bg-light">
-            <Navbar userid = {user?.userid}/>
+            <Navbar userid={user?.userid} />
 
             <div className="container mt-4">
                 <div className="text-center">
-                    <button
+                    {/* <button
                         type="button"
                         className="btn btn-primary rounded-pill m-2"
                         style={{ boxShadow: "gray 1px 1px 8px 1px" }}
@@ -42,7 +42,7 @@ const Dashboard = () => {
                         data-bs-toggle="modal"
                         data-bs-target="#">
                         <NotesIcon /> Add Notes
-                    </button>
+                    </button> */}
                     <button
                         type="button"
                         className="btn btn-primary rounded-pill m-2"

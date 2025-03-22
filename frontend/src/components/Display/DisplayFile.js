@@ -48,7 +48,7 @@ const DisplayFile = () => {
             fetchNotes();
             fetchPublicNotes();
         }
-    }, [user]);
+    },[user]);
 
 
 

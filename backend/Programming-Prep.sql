@@ -4,7 +4,7 @@ create table if not exists Quiz(
 	QuizId int primary key auto_increment,
 	QuizName VARCHAR(255) NOT NULL,
 	QuizDescription TEXT NOT NULL,
-    NumberOfQue INT NOT NULL,
+  NumberOfQue INT NOT NULL,
   IsActive BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -23,7 +23,24 @@ CREATE TABLE IF NOT EXISTS notes (
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         );
 
+
+CREATE TABLE IF NOT EXISTS QuizQuestions(
+  QuestionId INT PRIMARY KEY AUTO_INCREMENT,
+  QuizId INT NOT NULL,
+  QuestionText TEXT NOT NULL,
+  Option1 TEXT NOT NULL,
+  Option2 TEXT NOT NULL,
+  Option3 TEXT NOT NULL,
+  Option4 TEXT NOT NULL,
+  CorrectOption Int NOT NULL,
+  IsActive BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 select * from Quiz;
 
 -- Add is_public column to notes table for public/private visibility
 ALTER TABLE notes ADD COLUMN is_public BOOLEAN DEFAULT TRUE;
+
+select * from QuizQuestions;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-export default function AddQuiz() {
+export default function AddQuiz({ onQuizAdded }) {
     const [title, setTitle] = useState("");
     const [noOfQue, setNoOfQue] = useState("");
     const [description, setDescription] = useState("");
@@ -18,21 +18,17 @@ export default function AddQuiz() {
         const quiz = { title, description, noOfQue };
 
         try {
-            console.log("Sending quiz data:", quiz);
             const res = await fetch("http://localhost:5000/addQuiz", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(quiz),
             });
 
-            console.log("Response status:", res.status);
-
             if (!res.ok) {
                 throw new Error(`Server responded with status: ${res.status}`);
             }
 
             const data = await res.json();
-            console.log("Response data:", data);
 
             if (data && data.message) {
                 alert(data.message);
@@ -50,17 +46,14 @@ export default function AddQuiz() {
                     if (modalBackdrop) {
                         modalBackdrop.remove();
                     }
-
                     // ✅ Remove 'modal-open' class from body
                     document.body.classList.remove("modal-open");
                 }
 
             } else {
-                console.error("Unexpected response format:", data);
                 alert("Quiz added but received unexpected response format");
             }
         } catch (error) {
-            console.error("Error adding quiz:", error);
             alert("Failed to add quiz: " + error.message);
         } finally {
             setLoading(false);
@@ -81,13 +74,13 @@ export default function AddQuiz() {
                 <div className="modal-dialog modal-lg modal-dialog-centered">
                     <div className="modal-content border-0 shadow-lg">
                         <div className="modal-header purple-500-bg text-white">
-                            <h4 className="modal-title w-100 text-center fw-bold" id="staticBackdropLabel"><UploadIcon fontSize="large" /> Upload Quiz</h4>
+                            <h4 className="modal-title w-100 text-center fw-bold" id="staticBackdropLabel"><UploadIcon fontSize="large" /> Create Quiz</h4>
                             <button type="button" className="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="modal-body p-4">
                             <div className="card p-4 border-0 shadow-sm">
                                 <form>
-                                    <div class="input-group mb-3">
+                                    <div className="input-group mb-3">
                                         <input type="text" className="form-control p-3 shadow-sm rounded-3" id="title" placeholder='Title' value={title} onChange={(e) => setTitle(e.target.value)} />
                                     </div>
                                     <div className="mb-3">
@@ -102,7 +95,7 @@ export default function AddQuiz() {
 
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
-                            <button type="button" className="btn btn-primary px-4" onClick={handleSubmit} disabled={loading}><UploadIcon /> {loading ? " Adding..." : " Upload"}</button>
+                            <button type="button" className="btn btn-primary px-4" onClick={handleSubmit} disabled={loading}><UploadIcon /> {loading ? " Creating..." : " Create"}</button>
                         </div>
                     </div>
                 </div>

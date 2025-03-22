@@ -1,23 +1,25 @@
 import { useUser } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
 const AuthContext = () => {
-  const { isLoaded, user } = useUser(); // Ensure Clerk is fully loaded
+  const { isLoaded, user } = useUser();
   const navigate = useNavigate();
+  const location = useLocation(); // Get current URL location
 
   useEffect(() => {
-    if (!isLoaded) return; // Wait until Clerk is fully loaded
+    if (!isLoaded || !user) return; // Wait until Clerk is fully loaded
 
-    if (user) {
-      const role = user?.publicMetadata?.role || "user"; // Default to "user" if role is undefined
-      if (role === "admin") {
-        navigate("/admin-dashboard");
-      } else {
-        navigate("/user-dashboard");
-      }
+    const role = user?.publicMetadata?.role || "user"; // Default role is "user"
+    const path = location.pathname;
+
+    // Avoid unnecessary redirects
+    if (role === "admin" && !["/admin-dashboard", "/admin-quiz", "/admin-files", "/admin-quiz-list"].includes(path)) {
+      navigate("/admin-dashboard");
+    } else if (role !== "admin" && !["/user-dashboard", "/user-quiz", "/user-explore"].includes(path)) {
+      navigate("/user-dashboard");
     }
-  }, [isLoaded, user, navigate]);
+  }, [isLoaded, user, location.pathname, navigate]); // Add location.pathname to dependencies
 
   return null;
 };
