@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import Navbar from '../components/Navbar';
-import ThemeButton from '../components/ThemeButton';
-import DisplayFile from '../components/Display/DisplayFile';
-import AddFileModal from '../components/Modal/AddFile';
+import Navbar from '../../components/Navbar';
+import ThemeButton from '../../components/ThemeButton';
+import DisplayFile from '../../components/Display/DisplayFile';
+import AddFileModal from '../../components/Modal/AddFile';
 
 import FileIcon from '@mui/icons-material/NoteAdd';
 import LinkIcon from '@mui/icons-material/AddLink';
@@ -23,7 +23,7 @@ const Dashboard = () => {
 
     return (
         <div className="d-flex flex-column min-vh-100 bg-light">
-            <Navbar userid = {user?.userid}/>
+            <Navbar userid={user?.userid} />
 
             <div className="container mt-4">
                 <div className="text-center">

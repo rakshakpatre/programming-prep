@@ -11,14 +11,14 @@ body {
   position: fixed;
   bottom: 50px;
   right: 50px;
- 
+
   width: 60px;
-  
+
   height: 60px;
   border-radius: 50%;
-  
+
   background-color: #432874;
-  
+
   color: #fff;
   border: none;
   cursor: pointer;
@@ -70,7 +70,7 @@ body {
 }
 
 .purple-500-bg {
-  background-color: #6f42c1;
+  background-color: #6f42c1 !important;
 }
 
 .purple-600 {
@@ -82,7 +82,7 @@ body {
 }
 
 .purple-700-bg {
-  background-color: #432874;
+  background-color: #432874 !important;
 }
 
 .purple-800 {
