@@ -27,6 +27,10 @@ export default function AdminQuizList() {
     const [QC, setQC] = useState("");
 
     useEffect(() => {
+        fetchQuestions();
+    }, [id]);
+
+    const fetchQuestions = () => {
         if (!id) return; // Prevent API call if ID is not available
 
         fetch(`http://localhost:5000/get-questions/${id}`)
@@ -44,9 +48,13 @@ export default function AdminQuizList() {
                 setError(error.message);
                 setLoading(false);
             });
-    }, [id]);
+    }
 
     useEffect(() => {
+        fetchQuizzes();
+    }, [id]);
+
+    const fetchQuizzes = () => {
         if (!id) return;
 
         fetch(`http://localhost:5000/get-quiz-by-id/${id}`)
@@ -69,8 +77,7 @@ export default function AdminQuizList() {
                 setError(error.message);
                 setLoading(false);
             });
-    }, [id]);
-
+    }
 
     // Function to fetch count of added questions
     const fetchQuestionCount = async (quizId) => {
@@ -119,6 +126,8 @@ export default function AdminQuizList() {
                 } else {
                     alert("Error deleting quiz!");
                 }
+                fetchQuestions();
+                fetchQuizzes();
             })
             .catch(error => console.error("Error deleting quiz:", error));
     };
@@ -167,9 +176,7 @@ export default function AdminQuizList() {
                 <h4 className="text-center mt-5 mb-3 purple-700 fw-bold fst-italic">Quiz Questions</h4>
                 <div className="row">
                     {error ? (<p>Error: {error}</p>) : loading ? (<p>Loading questions...</p>) :
-                        questions.length === 0 ? (
-                            <p className="text-center">No questions available</p>
-                        ) : (
+                        Array.isArray(questions) && questions.length > 0 ? (
                             questions.map((question, index) => (
                                 <div key={question.QuestionId} className="col-sm-12 col-md-6">
                                     <div className="card mb-4 shadow-sm">
@@ -196,13 +203,16 @@ export default function AdminQuizList() {
                                     </div>
                                 </div>
                             ))
+
+                        ) : (
+                            <p className="text-center">No questions available</p>
                         )}
                 </div>
             </div>
-            <UpdateQuiz updateQuizId={updateQuizId} />
-            <UpdateQuestion updateQuestionId={updateQuestionId} />
+            <UpdateQuiz updateQuizId={updateQuizId} fetchQuizzes={fetchQuizzes} />
+            <UpdateQuestion updateQuestionId={updateQuestionId} fetchQuestions={fetchQuestions} />
             <AddQuiz />
-            <AddQuizQuestionModal quizId={quizId} noOfQue={noOfQue} queCount={QC} quizName={quizName} />
+            <AddQuizQuestionModal quizId={quizId} noOfQue={noOfQue} queCount={QC} quizName={quizName} fetchQuestionCount={fetchQuestionCount} fetchQuestions={fetchQuestions} />
         </>
     );
 }

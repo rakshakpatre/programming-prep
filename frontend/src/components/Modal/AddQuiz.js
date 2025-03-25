@@ -36,19 +36,29 @@ export default function AddQuiz({ onQuizAdded }) {
                 setNoOfQue("");
                 setDescription("");
 
+                // ✅ Send new quiz to DisplayQuiz component
+                onQuizAdded(data.quiz);
+
                 // ✅ Close Modal
                 const modalElement = document.getElementById("adaQuiz");
                 const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) {
                     modalInstance.hide();
-                    // ✅ Remove the remaining backdrop manually
-                    const modalBackdrop = document.querySelector(".modal-backdrop");
-                    if (modalBackdrop) {
-                        modalBackdrop.remove();
-                    }
-                    // ✅ Remove 'modal-open' class from body
-                    document.body.classList.remove("modal-open");
+
+                    // Wait a bit for Bootstrap's animation to complete, then clean up
+                    setTimeout(() => {
+                        // ✅ Remove all modal backdrops
+                        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+                        // ✅ Restore scrolling
+                        document.body.classList.remove("modal-open");
+                        document.body.style.overflow = "auto";
+                        document.body.style.paddingRight = "";
+                    }, 300); // Slight delay ensures Bootstrap animation completes
                 }
+
+                // ✅ Remove the modal backdrop (fix lingering dark overlay)
+                document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
 
             } else {
                 alert("Quiz added but received unexpected response format");

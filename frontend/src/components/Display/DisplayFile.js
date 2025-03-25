@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import AddFileModal from "../Modal/AddFile";
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -18,18 +18,47 @@ const DisplayFile = () => {
     const modalRef = useRef(null);
     const modalRefEdit = useRef(null);
 
-    const fetchNotes = useCallback(async () => {
-        try {
-            const res = await fetch(`http://localhost:5000/api/notes?user_id=${user.id}`);
-            if (!res.ok) throw new Error("Failed to fetch notes");
-            const data = await res.json();
-            setNotes(data);
-        } catch (error) {
-            console.error("Error fetching notes:", error);
-        } finally {
-            setLoading(false);
+    // Load notes when user logs in
+    useEffect(() => {
+        if (user?.id) {
+            fetchNotes();
+            fetchPublicNotes();
         }
-    }, [user.id]);
+    }, [user]);
+
+
+    const fetchNotes = () => {
+        fetch(`http://localhost:5000/api/notes?user_id=${user.id}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch notes");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setNotes(data);
+                setLoading(false);
+            })
+            .catch((error) => {
+                console.error("Error fetching notes:", error);
+                setNotes([]); 
+                setLoading(false);
+            });
+    };
+
+
+    // const fetchNotes = useCallback(async () => {
+    //     try {
+    //         const res = await fetch(`http://localhost:5000/api/notes?user_id=${user.id}`);
+    //         if (!res.ok) throw new Error("Failed to fetch notes");
+    //         const data = await res.json();
+    //         setNotes(data);
+    //     } catch (error) {
+    //         console.error("Error fetching notes:", error);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // }, [user.id]);
 
     // Fetch only public notes from all users
     const fetchPublicNotes = async () => {
@@ -42,13 +71,7 @@ const DisplayFile = () => {
         }
     };
 
-    // Load notes when user logs in
-    useEffect(() => {
-        if (user?.id) {
-            fetchNotes();
-            fetchPublicNotes();
-        }
-    },[user]);
+
 
 
 
@@ -217,52 +240,52 @@ const DisplayFile = () => {
             alert("File not found!");
             return;
         }
-    
+
         try {
             // Step 1: Increment download count in backend
             const countResponse = await fetch(`http://localhost:5000/api/notes/public/${note.id}/download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
-    
+
             if (!countResponse.ok) {
                 throw new Error("Failed to update download count");
             }
-    
+
             // Step 2: Get updated download count from server
             const updatedNote = await countResponse.json();
-    
+
             // Step 3: Update local state in real time
             setNotes(prevNotes =>
                 prevNotes.map(n =>
                     n.id === note.id ? { ...n, other_user_download_count: updatedNote.other_user_download_count } : n
                 )
             );
-    
+
             setPublicNotes(prevPublicNotes =>
                 prevPublicNotes.map(n =>
                     n.id === note.id ? { ...n, other_user_download_count: updatedNote.other_user_download_count } : n
                 )
             );
-    
+
             // Step 4: Proceed to download the file
             const fileURL = `http://localhost:5000/uploads/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
             const response = await fetch(fileURL, { method: "GET" });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to download file");
             }
-    
+
             // Step 5: Convert response to blob and trigger download
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const anchor = document.createElement("a");
-    
+
             anchor.href = url;
             anchor.download = note.title || "downloaded-file";
             document.body.appendChild(anchor);
             anchor.click();
-    
+
             // Step 6: Cleanup after download
             document.body.removeChild(anchor);
             window.URL.revokeObjectURL(url);
@@ -271,10 +294,10 @@ const DisplayFile = () => {
             alert("Failed to download file. Please try again.");
         }
     };
-    
-    
 
-//---------------------------- Delete a note ---------------------------------------
+
+
+    //---------------------------- Delete a note ---------------------------------------
 
     const handleDeleteNote = async (noteId) => {
         const confirmDelete = window.confirm("Are you sure you want to delete this note?");
@@ -299,7 +322,7 @@ const DisplayFile = () => {
         }
     };
 
-//---------------------------- Get File Icon Class ---------------------------------------
+    //---------------------------- Get File Icon Class ---------------------------------------
 
     const getFileIconClass = (filePath) => {
         if (!filePath) return "bi-file-earmark";
@@ -332,7 +355,7 @@ const DisplayFile = () => {
     return (
         <>
             <AddFileModal fetchNotes={fetchNotes} />
-            <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
+            <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} fetchNotes={fetchNotes} />
             <div className="row">
 
                 {loading ? <p>Loading notes...</p> : (
@@ -344,7 +367,7 @@ const DisplayFile = () => {
                                 <div className="col-sm-6 col-md-4 mb-3" style={{
                                     maxWidth: '540px'
                                 }} key={note.id}>
-                                    <div className="border border-primary p-1 card">
+                                    <div className="border border-0 p-1 card shadow rounded-3">
                                         <div className="row g-0 p-1">
                                             <div className="col-2 d-flex justify-content-center align-items-center">
                                                 <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
@@ -415,7 +438,7 @@ const DisplayFile = () => {
                                 maxWidth: '540px'
                             }}>
                                 {/* // <li key={note.id}>{note.title} - By User {note.user_id}</li> */}
-                                <div className="border border-primary p-1 card">
+                                <div className="border border-0 p-1 card shadow rounded-3">
                                     <div className="row g-0 p-1">
                                         <div className="col-2 d-flex justify-content-center align-items-center">
                                             <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>

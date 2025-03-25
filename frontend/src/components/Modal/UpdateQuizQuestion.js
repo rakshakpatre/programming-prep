@@ -3,7 +3,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Modal } from "bootstrap";
 
 
-export default function UpdateQuizQuestion({ updateQuestionId }) {
+export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions }) {
     const [questionData, setQuestionData] = useState({
         QuestionText: "",
         Option1: "",
@@ -64,13 +64,23 @@ export default function UpdateQuizQuestion({ updateQuestionId }) {
             if (response.ok) {
                 alert("Question updated successfully!");
                 console.log("Success:", data);
+                fetchQuestions();
                 // ✅ Hide modal properly
                 const modalElement = document.getElementById("updateQuizQuestion");
-                if (modalElement) {
-                    const modalInstance = Modal.getInstance(modalElement); // Get existing instance
-                    if (modalInstance) {
-                        modalInstance.hide(); // Hide modal
-                    }
+                const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+
+                    // Wait a bit for Bootstrap's animation to complete, then clean up
+                    setTimeout(() => {
+                        // ✅ Remove all modal backdrops
+                        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+                        // ✅ Restore scrolling
+                        document.body.classList.remove("modal-open");
+                        document.body.style.overflow = "auto";
+                        document.body.style.paddingRight = "";
+                    }, 300); // Slight delay ensures Bootstrap animation completes
                 }
 
                 // ✅ Remove the modal backdrop (fix lingering dark overlay)

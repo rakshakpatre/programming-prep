@@ -3,7 +3,7 @@ import UploadIcon from '@mui/icons-material/Upload'
 import NearMeIcon from '@mui/icons-material/NearMe';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-export default function AddQuizQuestions({ quizId, noOfQue, queCount, quizName }) {
+export default function AddQuizQuestions({ quizId, noOfQue, queCount, quizName, fetchQuestionCount, fetchQuestions }) {
     const navigate = useNavigate();
     const location = useLocation();
     const [questionData, setQuestionData] = useState({
@@ -47,18 +47,23 @@ export default function AddQuizQuestions({ quizId, noOfQue, queCount, quizName }
 
     const handleSubmit = async () => {
         try {
+
+
             const response = await fetch("http://localhost:5000/add-question", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(questionData),
+                body: JSON.stringify(questionData)
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert("Question added successfully!");
-                console.log("Success:", data);
+                alert(data.message);
 
+                if (location.pathname === '/admin-quiz-list') {
+                    fetchQuestions();
+                }
+                fetchQuestionCount(questionData.QuizId);
                 // ✅ Increment questionCount when a new question is added
                 setQuestionData(prevData => ({
                     ...prevData,
@@ -71,7 +76,7 @@ export default function AddQuizQuestions({ quizId, noOfQue, queCount, quizName }
                     CorrectOption: 1
                 }));
             } else {
-                alert("Failed to add question. Please try again.");
+                alert(data.error);
             }
         } catch (error) {
             alert("Error adding question: " + error.message);
@@ -82,13 +87,25 @@ export default function AddQuizQuestions({ quizId, noOfQue, queCount, quizName }
     const handleNavigation = (QuizId) => {
         // ✅ Hide the modal using Bootstrap API
         const modalElement = document.getElementById("adaQuizQuestion");
-        if (modalElement) {
-            const modal = new window.bootstrap.Modal(modalElement);
-            modal.hide();
+        const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+            modalInstance.hide();
+
+            // Wait a bit for Bootstrap's animation to complete, then clean up
+            setTimeout(() => {
+                // ✅ Remove all modal backdrops
+                document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+                // ✅ Restore scrolling
+                document.body.classList.remove("modal-open");
+                document.body.style.overflow = "auto";
+                document.body.style.paddingRight = "";
+            }, 300); // Slight delay ensures Bootstrap animation completes
         }
 
-        // ✅ Remove the modal backdrop
+        // ✅ Remove the modal backdrop (fix lingering dark overlay)
         document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
 
         navigate("/admin-quiz-list", { state: { id: QuizId } });
     };

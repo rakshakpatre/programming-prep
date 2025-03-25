@@ -22,6 +22,10 @@ export default function DisplayQuiz() {
 
 
     useEffect(() => {
+        fetchQuizzes();
+    }, []);
+
+    const fetchQuizzes = () => {
         fetch("http://localhost:5000/api/quizzes")
             .then((response) => response.json())
             .then((data) => {
@@ -32,13 +36,19 @@ export default function DisplayQuiz() {
                 data.forEach(quiz => {
                     fetchQuestionCount(quiz.QuizId);
                 });
+
             })
             .catch((error) => {
                 console.error("Error fetching quizzes:", error);
                 setQuizzes([]); // ✅ Set empty array on error
                 setLoading(false);
             });
-    }, []);
+    }
+
+    // ✅ Function to add new quiz to state without reloading
+    const handleQuizAdded = (newQuiz) => {
+        setQuizzes(prevQuizzes => [newQuiz, ...prevQuizzes]); // Add new quiz at the top
+    };
 
     // Function to fetch count of added questions
     const fetchQuestionCount = async (quizId) => {
@@ -77,6 +87,7 @@ export default function DisplayQuiz() {
                 if (data.success) {
                     alert("Quiz deleted successfully!");
                     navigate("/admin-quiz");
+                    fetchQuizzes();
                 } else {
                     alert("Error deleting quiz!");
                 }
@@ -148,9 +159,9 @@ export default function DisplayQuiz() {
                     )}
                 </div>
             </div >
-            <AddQuizModal />
-            <UpdateQuiz updateQuizId={updateQuizId} />
-            <AddQuizQuestionModal quizId={quizId} noOfQue={noOfQue} queCount={QC} quizName={quizName} />
+            <AddQuizModal onQuizAdded={handleQuizAdded} />
+            <UpdateQuiz updateQuizId={updateQuizId} fetchQuizzes={fetchQuizzes} />
+            <AddQuizQuestionModal quizId={quizId} noOfQue={noOfQue} queCount={QC} quizName={quizName} fetchQuestionCount={fetchQuestionCount} />
         </>
     );
 };
