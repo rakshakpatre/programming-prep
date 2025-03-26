@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useUser } from "@clerk/clerk-react";
 import AddIcon from "@mui/icons-material/Add";
 import AddQuizModal from "../../components/Modal/AddQuiz";
 import NearMeIcon from '@mui/icons-material/NearMe';
@@ -10,6 +11,7 @@ import UpdateQuiz from '../../components/Modal/UpdateQuiz';
 
 
 export default function DisplayQuiz() {
+    const { user } = useUser();
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updateQuizId, setupdateQuizId] = useState("");
@@ -97,68 +99,119 @@ export default function DisplayQuiz() {
 
     return (
         <>
-            <div className="container mt-5">
-                <div className="row">
-                    {loading ? (
-                        <p>Loading notes...</p>
-                    ) : quizzes.length > 0 ? (
-                        quizzes.map((quiz) => (
-                            <div className="col-md-4 mb-3" key={quiz.QuizId}>
-                                <div className="card shadow">
-                                    <div className="card-body">
-                                        <div className="row">
-                                            <div className="col-10">
-                                                <h5 className="card-title">{quiz.QuizName}</h5>
-                                                <p className="card-text">
-                                                    {quiz.QuizDescription.length > 50
-                                                        ? `${quiz.QuizDescription.substring(0, 50)}...`
-                                                        : quiz.QuizDescription}
-                                                </p>
+            {user?.publicMetadata?.role === "admin" ? (
+                <div className="container mt-5">
+                    <div className="row">
+                        {loading ? (
+                            <p>Loading notes...</p>
+                        ) : quizzes.length > 0 ? (
+                            quizzes.map((quiz) => (
+                                <div className="col-md-4 mb-3" key={quiz.QuizId}>
+                                    <div className="card shadow">
+                                        <div className="card-body">
+                                            <div className="row">
+                                                <div className="col-10">
+                                                    <h5 className="card-title">{quiz.QuizName}</h5>
+                                                    <p className="card-text">
+                                                        {quiz.QuizDescription.length > 50
+                                                            ? `${quiz.QuizDescription.substring(0, 50)}...`
+                                                            : quiz.QuizDescription}
+                                                    </p>
+                                                </div>
+                                                <div className="col-2">
+                                                    <button className="btn mb-1 border-0" data-bs-toggle="modal"
+                                                        data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
+                                                </div>
+
                                             </div>
-                                            <div className="col-2">
-                                                <button className="btn mb-1 border-0" data-bs-toggle="modal"
-                                                    data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
-                                                <button className="btn mb-1 border-0" onClick={() => handleDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
-                                            </div>
-                                        </div>
-                                        <div className="d-flex justify-content-between align-items-center mt-3">
-                                            <span className="text-muted">Quesitions  {questionCounts[quiz.QuizId] || 0}/{quiz.NumberOfQue}</span>
-                                            {questionCounts[quiz.QuizId] >= quiz.NumberOfQue ? (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
-                                                    style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/admin-quiz-list", { state: { id: quiz.QuizId } })}>
-                                                    <NearMeIcon /> Go To Quiz
-                                                </button>
-                                            ) : (
-                                                <div>
+                                            <div className="d-flex justify-content-between align-items-center mt-3">
+                                                <span className="text-muted">Quesitions  {questionCounts[quiz.QuizId] || 0}/{quiz.NumberOfQue}</span>
+                                                {questionCounts[quiz.QuizId] >= quiz.NumberOfQue ? (
                                                     <button
                                                         type="button"
-                                                        className="btn btn-primary rounded-pill mx-1 btn-sm"
-                                                        style={{ boxShadow: "gray 1px 1px 8px 1px" }}
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#adaQuizQuestion"
-                                                        onClick={() => handleData(quiz.QuizId, quiz.NumberOfQue, questionCounts[quiz.QuizId], quiz.QuizName)} >
-                                                        <AddIcon />
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-primary rounded-pill mx-1 btn-sm text-white"
+                                                        className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
                                                         style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/admin-quiz-list", { state: { id: quiz.QuizId } })}>
                                                         <NearMeIcon /> Go To Quiz
                                                     </button>
-                                                </div>
-                                            )}
+                                                ) : (
+                                                    <div>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary rounded-pill mx-1 btn-sm"
+                                                            style={{ boxShadow: "gray 1px 1px 8px 1px" }}
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#adaQuizQuestion"
+                                                            onClick={() => handleData(quiz.QuizId, quiz.NumberOfQue, questionCounts[quiz.QuizId], quiz.QuizName)} >
+                                                            <AddIcon />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary rounded-pill mx-1 btn-sm text-white"
+                                                            style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/admin-quiz-list", { state: { id: quiz.QuizId } })}>
+                                                            <NearMeIcon /> Go To Quiz
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No quizzes found</p>
-                    )}
+                            ))
+                        ) : (
+                            <p>No quizzes found</p>
+                        )}
+                    </div>
                 </div>
-            </div >
+            ) : (
+                <div className="container mt-5">
+                    <h2 className='purple-700 fw-bold fst-italic mb-4'>Quiz</h2>
+                    <div className="row">
+                        {loading ? (
+                            <p>Loading notes...</p>
+                        ) : quizzes.length > 0 ? (
+                            quizzes.map((quiz) => (
+                                <React.Fragment key={quiz.QuizId}>
+                                    {
+                                        questionCounts[quiz.QuizId] >= quiz.NumberOfQue ? (
+                                            <div className="col-md-4 mb-3">
+                                                <div className="card shadow">
+                                                    <div className="card-body">
+                                                        <div className="row">
+                                                            <div className="col-10">
+                                                                <h5 className="card-title">{quiz.QuizName}</h5>
+                                                                <p className="card-text">
+                                                                    {quiz.QuizDescription.length > 50
+                                                                        ? `${quiz.QuizDescription.substring(0, 40)}...`
+                                                                        : quiz.QuizDescription}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="d-flex justify-content-between align-items-center mt-3">
+                                                            <span className="text-muted">Total Quesitions {quiz.NumberOfQue}</span>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
+                                                                style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-quiz-exam", { state: { id: quiz.QuizId } })}>
+                                                                <NearMeIcon /> Start Quiz
+                                                            </button>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : ("")
+                                    }
+                                </React.Fragment>
+
+                            ))
+                        ) : (
+                            <p>No quizzes found</p>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <AddQuizModal onQuizAdded={handleQuizAdded} />
             <UpdateQuiz updateQuizId={updateQuizId} fetchQuizzes={fetchQuizzes} />
             <AddQuizQuestionModal quizId={quizId} noOfQue={noOfQue} queCount={QC} quizName={quizName} fetchQuestionCount={fetchQuestionCount} />

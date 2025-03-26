@@ -554,6 +554,61 @@ app.put('/update-question/:id', async (req, res) => {
     }
 });
 
+
+// Fetch quiz questions
+app.get('/quiz/:quizId', async (req, res) => {
+    try {
+        const quizId = req.params.quizId;
+        const [results] = await db.execute('SELECT * FROM QuizQuestions WHERE QuizId = ? AND IsActive = 1', [quizId]);
+        res.json(results);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+// Submit quiz answers
+app.post('/submit-quiz', async (req, res) => {
+    try {
+        const { userId, quizId, answers } = req.body;
+        let obtainedMarks = 0;
+
+        for (const ans of answers) {
+            const { questionId, selectedOption } = ans;
+            const [result] = await db.execute('SELECT CorrectOption FROM QuizQuestions WHERE QuestionId = ? AND IsActive = 1', [questionId]);
+
+            if (result.length > 0 && result[0].CorrectOption == selectedOption) {
+                obtainedMarks++;
+            }
+
+            await db.execute('INSERT INTO UserAnswers (UserId, QuizId, QuestionId, SelectedOption, IsCorrect) VALUES (?, ?, ?, ?, ?)', [
+                userId, quizId, questionId, selectedOption, result.length > 0 && result[0].CorrectOption == selectedOption
+            ]);
+        }
+
+        // Calculate result
+        const [quizResult] = await db.execute('SELECT NumberOfQue FROM Quiz WHERE QuizId = ? AND IsActive = 1', [quizId]);
+
+        if (quizResult.length === 0) {
+            console.error("Quiz not found for QuizId:", quizId);
+            return res.status(400).json({ error: "Quiz not found" });
+        }
+
+        const totalMarks = quizResult[0].NumberOfQue;
+        const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+        const status = percentage >= 40 ? 'Pass' : 'Fail';
+
+        await db.execute('INSERT INTO QuizResults (UserId, QuizId, TotalMarks, ObtainedMarks, Percentage, Status) VALUES (?, ?, ?, ?, ?, ?)', [
+            userId, quizId, totalMarks, obtainedMarks, percentage, status
+        ]);
+
+        res.json({ obtainedMarks, totalMarks, percentage, status });
+    } catch (err) {
+        console.error("Submit Quiz Error:", err); 
+        res.status(500).json({ error: err.message }); 
+    }
+});
+
+
 //-------------------------- Start Server----------------------------
 
 const PORT = process.env.PORT || 5000;
