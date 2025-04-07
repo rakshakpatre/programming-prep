@@ -47,6 +47,34 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
 });
 
 
+// ---------------------------- Add a new links ----------------------------
+
+app.post("/api/links/addLink", async (req, res) => {
+    try {
+
+      const { linktitle, linkcontent, user_id, url , isPublic } = req.body;
+       // Convert isPublic from "true"/"false" string to integer (1 or 0)
+       const isPublicInt = isPublic === "true" ? 1 : 0;
+
+  
+      if (!linktitle || !linkcontent || !user_id || !url) {
+        console.error("Missing fields:", req.body);
+        return res.status(400).json({ error: "All fields are required" });
+      }
+  
+      const [result] = await db.execute(
+        "INSERT INTO links (linktitle, linkcontent, user_id, url , isPublic) VALUES (?, ?, ?, ?, ?)",
+        [linktitle, linkcontent, user_id, url, isPublicInt]
+      );
+  
+    //   console.log("Data inserted:", result);
+    res.json({linkId: result.insertId, linktitle, linkcontent, user_id, url, isPublic  });
+  
+    } catch (error) {
+      console.error("SQL Error:", error.sqlMessage);
+      res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+  });
 
 //------------------Fetch Notes for Logged-in User--------------------------
 
@@ -56,7 +84,7 @@ app.get("/api/notes", async (req, res) => {
 
     try {
         const [notes] = await db.query(
-            "SELECT * FROM notes WHERE user_id = ? AND IsActive = 1",
+            "SELECT * FROM notes WHERE user_id = ? AND IsActive = 1 ORDER BY created_at DESC",
             [user_id]
         );
         res.json(notes);
@@ -71,7 +99,7 @@ app.get("/api/notes", async (req, res) => {
 app.get("/api/notes/public", async (req, res) => {
     try {
         const [publicNotes] = await db.query(
-            "SELECT * FROM notes WHERE isPublic = 1 AND IsActive = 1"
+            "SELECT * FROM notes WHERE isPublic = 1 AND IsActive = 1 ORDER BY created_at DESC"
         );
         res.json(publicNotes);
     } catch (error) {
@@ -81,9 +109,42 @@ app.get("/api/notes/public", async (req, res) => {
 });
 
 
+//------------------Fetch links --------------------------
+
+app.get("/api/links", async (req, res) => {
+    const { user_id } = req.query;
+    if (!user_id) return res.status(400).json({ error: "User ID is required" });
+
+    try {
+        const [links] = await db.query(
+            "SELECT * FROM links WHERE user_id = ? AND IsActive = 1 ORDER BY created_at DESC",
+            [user_id]
+        );
+        res.json(links);
+    } catch (error) {
+        console.error("Error fetching links:", error);
+        res.status(500).json({ error: "Failed to fetch links" });
+    }
+});
+
+
+app.get("/api/links/public", async (req, res) => {
+    try {
+        const [publicLinks] = await db.query(
+            "SELECT * FROM links WHERE isPublic = 1 AND isActive = 1 ORDER BY created_at DESC"
+        );
+        res.json(publicLinks);
+    } catch (error) {
+        console.error("Error fetching public links:", error);
+        res.status(500).json({ error: "Failed to fetch public links" });
+    }
+});
+
+
+
 //------------------------- Delete Notes -----------------------------
 
-app.delete("/api/notes/:id", async (req, res) => {
+app.delete("/api/notes/delete/:id", async (req, res) => {
     const { id } = req.params;
 
     if (!id) return res.status(400).json({ error: "Note ID is required" });
@@ -99,6 +160,29 @@ app.delete("/api/notes/:id", async (req, res) => {
     } catch (error) {
         console.error("Error deleting note:", error);
         res.status(500).json({ error: "Failed to delete note" });
+    }
+});
+
+
+
+//------------------------- Delete Files -----------------------------
+
+app.delete("/api/links/delete/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        const [result] = await db.execute("Update links Set IsActive = 0 WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Link not found" });
+        }
+
+        res.json({ message: "Link deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        res.status(500).json({ error: "Failed to delete link" });
     }
 });
 
@@ -127,6 +211,43 @@ app.post("/api/notes/:id/view", async (req, res) => {
         // Update the view count
         const [result] = await db.execute(
             "UPDATE notes SET view_count = ? WHERE id = ?",
+            [newViewCount, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update view count" });
+        }
+
+        res.json({ message: "View count updated successfully", view_count: newViewCount });
+    } catch (error) {
+        console.error("Error updating view count:", error);
+        res.status(500).json({ error: "Failed to update view count" });
+    }
+});
+
+
+//--------------------- Increment link view count for a owner note Server code------------------------
+
+app.post("/api/links/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Link ID is required" });
+
+    try {
+        // First check if the note exists and is active
+        const [links] = await db.query("SELECT * FROM links WHERE id = ? AND IsActive = 1", [id]);
+
+        if (links.length === 0) {
+            return res.status(404).json({ error: "Link not found" });
+        }
+
+        // Get current view count or default to 0 if null
+        const currentViewCount = links[0].view_count || 0;
+        const newViewCount = currentViewCount + 1;
+
+        // Update the view count
+        const [result] = await db.execute(
+            "UPDATE links SET view_count = ? WHERE id = ?",
             [newViewCount, id]
         );
 
@@ -296,6 +417,41 @@ app.post("/api/notes/update-note", upload.single("file"), async (req, res) => {
         res.json({ message: "Note updated successfully!" });
     } catch (error) {
         console.error("Error updating note:", error);
+        res.status(500).json({ error: "Database update failed" });
+    }
+});
+
+//-------------------------------- API to Update Note -------------------------------------
+
+app.post("/api/links/update-link", async (req, res) => {
+    const { id, url, linktitle, linkcontent, isPublic } = req.body;
+
+    if (!id) return res.status(400).json({ error: "Link ID is required" });
+
+    try {
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = isPublic === "true" ? 1 : 0;
+        
+        // Check if the note exists
+        const [links] = await db.query("SELECT * FROM links WHERE id = ?", [id]);
+
+        if (links.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        let query = "UPDATE links SET url=?, linktitle=?, linkcontent=?, isPublic=? WHERE id=?";
+        let values = [url, linktitle, linkcontent, isPublicInt, id];
+
+
+        const [result] = await db.execute(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update link" });
+        }
+
+        res.json({ message: "Link updated successfully!" });
+    } catch (error) {
+        console.error("Error updating link:", error);
         res.status(500).json({ error: "Database update failed" });
     }
 });
@@ -534,6 +690,113 @@ app.put('/update-question/:id', async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 });
+
+// ---------------------------- Add a new note----------------------------
+
+app.post("/api/admin-notes/add", upload.single("file"), async (req, res) => {
+    try {
+        console.log("Received Request to Add Note"); // Debug log
+
+        // Log request body and file
+        console.log("Request Body:", req.body);
+        console.log("Uploaded File:", req.file);
+
+        const { title, content, admin_id, isPublic } = req.body;
+        const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+
+        // Convert `isPublic` properly to an integer (1 or 0)
+        const isPublicInt = parseInt(isPublic, 10);
+
+        // Check for required fields
+        if (!title || !content || !admin_id) {
+            console.log("Validation Error: Missing Fields");
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        // Insert into the database
+        const [result] = await db.execute(
+            "INSERT INTO Admin_notes (title, content, admin_id, file_path, isPublic) VALUES (?, ?, ?, ?, ?)",
+            [title, content, admin_id, file_path, isPublicInt]
+        );
+
+        console.log("Note Inserted Successfully:", result);
+
+        res.status(201).json({
+            noteId: result.insertId,
+            title,
+            content,
+            admin_id,
+            file_path,
+            isPublic: isPublicInt,
+        });
+    } catch (error) {
+        console.error("Error adding note:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+//------------------Fetch Notes for Logged-in Admin--------------------------
+
+app.get("/api/admin-notes", async (req, res) => {
+    const { admin_id } = req.query;
+    if (!admin_id) return res.status(400).json({ error: "Admin ID is required" });
+
+    try {
+        const [notes] = await db.query(
+            "SELECT * FROM Admin_notes WHERE admin_id = ? AND IsActive = 1 ORDER BY created_at DESC",
+            [admin_id]
+        );
+        res.json(notes);
+    } catch (error) {
+        console.error("Error fetching notes:", error);
+        res.status(500).json({ error: "Failed to fetch notes" });
+    }
+});
+
+app.get("/api/admin-notes/public", async (req, res) => {
+    try {
+        const [publicNotes] = await db.query(
+            "SELECT * FROM Admin_notes WHERE isPublic = 1 AND IsActive = 1 ORDER BY created_at DESC"
+        );
+        res.json(publicNotes);
+    } catch (error) {
+        console.error("Error fetching public notes:", error);
+        res.status(500).json({ error: "Failed to fetch public notes" });
+    }
+});
+
+// app.get("/api/admin-notes", async (req, res) => {
+//     const { admin_id } = req.query;
+//     if (!admin_id) return res.status(400).json({ error: "User ID is required" });
+
+//     try {
+//         const [notes] = await db.query(
+//             "SELECT * FROM Admin_notes WHERE admin_id = ? AND IsActive = 1 ORDER BY created_at DESC",
+//             [admin_id]
+//         );
+//         res.json(notes);
+//     } catch (error) {
+//         console.error("Error fetching notes:", error);
+//         res.status(500).json({ error: "Failed to fetch notes" });
+//     }
+// });
+
+
+// app.get("/api/admin-notes", async (req, res) => {
+//     try {
+//         const [notes] = await db.query(
+//             "SELECT * FROM Admin_notes WHERE IsActive = 1 ORDER BY created_at DESC"
+//         );
+//         res.json(notes);
+//     } catch (error) {
+//         console.error("Error fetching notes:", error);
+//         res.status(500).json({ error: "Failed to fetch notes" });
+//     }
+// });
+
+
+
 
 //-------------------------- Start Server----------------------------
 

@@ -12,19 +12,18 @@ import UpdateFile from "../Modal/UpdateFile";
 import { Button } from "react-bootstrap";
 
 
-const DisplayFile = () => {
+const AdminDisplayFile = () => {
     const { user } = useUser();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedNote, setSelectedNote] = useState(null);
-    // const [publicNotes, setPublicNotes] = useState([]);
     const modalRef = useRef(null);
     const modalRefEdit = useRef(null);
     const [visibleLinks, setVisibleLinks] = useState(3);
 
     const fetchNotes = useCallback(async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/notes?user_id=${user.id}`);
+            const res = await fetch(`http://localhost:5000/api/admin-notes?admin_id=${user.id}`);
             if (!res.ok) throw new Error("Failed to fetch notes");
             const data = await res.json();
             setNotes(data);
@@ -34,6 +33,7 @@ const DisplayFile = () => {
             setLoading(false);
         }
     }, [user.id]);
+    
 
     // Load notes when user logs in
     useEffect(() => {
@@ -58,7 +58,7 @@ const DisplayFile = () => {
     const handleViewNote = async (note) => {
         try {
             // Increment view count on the server
-            const response = await fetch(`http://localhost:5000/api/notes/${note.id}/view`, {
+            const response = await fetch(`http://localhost:5000/api/admin-notes/${note.id}/view`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -107,7 +107,7 @@ const DisplayFile = () => {
 
         try {
             // First increment download count on the server
-            const countResponse = await fetch(`http://localhost:5000/api/notes/${note.id}/download`, {
+            const countResponse = await fetch(`http://localhost:5000/api/admin-notes/${note.id}/download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -163,7 +163,7 @@ const DisplayFile = () => {
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/notes/delete/${noteId}`, {
+            const response = await fetch(`http://localhost:5000/api/admin-notes/delete/${noteId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -220,7 +220,7 @@ const DisplayFile = () => {
 
                     {loading ? <p>Loading notes...</p> : (
                         <>
-                            <h2 className="purple fw-bold text-center">My Notes</h2>
+                            <h2 className="purple fw-bold text-center">Admin Notes</h2>
                             {notes.length > 0 ? (
                                 notes.slice(0, visibleLinks).map((note) => (
                                     <div className="col-sm-6 col-md-4 mb-3" style={{
@@ -249,7 +249,7 @@ const DisplayFile = () => {
                                                             ? `${note.content.substring(0, 50)}...`
                                                             : note.content}</p>
                                                         {/* Show creator name if it's not the current user's note */}
-                                                        {note.user_id !== user.id && note.firstName && note.lastName && (
+                                                        {note.admin_id !== user.id && note.firstName && note.lastName && (
                                                             <p className="card-text mb-1">
                                                                 <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
                                                             </p>
@@ -268,7 +268,7 @@ const DisplayFile = () => {
                                                         <VisibilityIcon color="info" />
                                                     </button>
                                                     {/* Only show edit and delete buttons for user's own notes */}
-                                                    {note.user_id === user.id && (
+                                                    {note.admin_id === user.id && (
                                                         <>
                                                             <button className="btn mb-1 border-0" onClick={() => handleEditNote(note)}>
                                                                 <EditIcon color="success" />
@@ -319,4 +319,4 @@ const DisplayFile = () => {
     );
 };
 
-export default DisplayFile;
+export default AdminDisplayFile;

@@ -2,14 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import Navbar from '../../components/Navbar';
-import ThemeButton from '../../components/ThemeButton';
 import DisplayFile from '../../components/Display/DisplayFile';
 import AddFileModal from '../../components/Modal/AddFile';
+import AddLink from "../../components/Modal/AddLink";
+import DisplayLink from "../../components/Display/DisplayLink";
 
 import FileIcon from '@mui/icons-material/NoteAdd';
 import LinkIcon from '@mui/icons-material/AddLink';
-// import NotesIcon from '@mui/icons-material/Notes';
-// import CodeIcon from '@mui/icons-material/Code';
+import DisplayPublicNote from "../../components/Display/DisplayPublicNote";
+// import AdminDisplayFile from "../../components/Display/AdminDisplayFile";
+import AdminDisplayPublicNote from "../../components/Display/AdminDisplayPublicNote";
 
 const Dashboard = () => {
     const { isSignedIn, user } = useUser();
@@ -57,17 +59,20 @@ const Dashboard = () => {
                         className="btn btn-primary rounded-pill m-2"
                         style={{ boxShadow: "gray 1px 1px 8px 1px" }}
                         data-bs-toggle="modal"
-                        data-bs-target="#">
+                        data-bs-target="#addLink">
                         <LinkIcon /> Add Links
                     </button>
                 </div>
                 <AddFileModal />
-                <ThemeButton />
+                <AddLink />
+                {/* <ThemeButton /> */}
             </div>
-            <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-5">
-                
+            <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-5">   
                 <div className="row">
                     <DisplayFile />
+                    <DisplayLink />
+                    <DisplayPublicNote />
+                    <AdminDisplayPublicNote />
                 </div>
             </div>
         </div>
