@@ -144,7 +144,7 @@ export default function UserQuizExam() {
                                     </button>
                                 </div>
                                 <div className='text-center'>
-                                    <button className="btn btn-primary mt-3" onClick={submitQuiz}>Submit Quiz</button>
+                                    <button className="btn btn-primary mt-3" disabled={Object.keys(answers).length !== questions.length} onClick={submitQuiz}>Submit Quiz</button>
                                 </div>
                             </div>
                         )}
@@ -188,7 +188,7 @@ export default function UserQuizExam() {
                                     </div>
                                 </>
                             )}
-                            <button className='btn btn-primary mt-5'><EyeIcon /> See Solutions</button>
+                            <button className='btn btn-primary mt-5' onClick={() => navigate('/user-solved-quiz', { state: { id: quizId } })}><EyeIcon /> See Solutions</button>
                         </div>
                     </div>
                 )}

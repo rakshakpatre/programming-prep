@@ -40,7 +40,7 @@ export default function Navbar() {
                                             <Link className={`nav-link ${location.pathname === "/user-dashboard" ? "active" : ""}`} to="/user-dashboard">Home</Link>
                                         </li>
                                         <li className="nav-item">
-                                            <Link className={`nav-link ${location.pathname === "/user-quiz" || location.pathname === "/user-quiz-exam" ? "active" : ""}`} to="/user-quiz">Quiz</Link>
+                                            <Link className={`nav-link ${location.pathname === "/user-quiz" || location.pathname === "/user-quiz-exam" || location.pathname === "/user-solved-quiz" ? "active" : ""}`} to="/user-quiz">Quiz</Link>
                                         </li>
                                         <li className="nav-item">
                                             <Link className={`nav-link ${location.pathname === "/user-explore" ? "active" : ""}`} to="/user-explore">Explore</Link>

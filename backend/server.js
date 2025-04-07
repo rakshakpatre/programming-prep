@@ -603,8 +603,75 @@ app.post('/submit-quiz', async (req, res) => {
 
         res.json({ obtainedMarks, totalMarks, percentage, status });
     } catch (err) {
-        console.error("Submit Quiz Error:", err); 
-        res.status(500).json({ error: err.message }); 
+        console.error("Submit Quiz Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// Fetch quiz questions
+app.post('/checkIsQuizSolved', async (req, res) => {
+    try {
+        const { quizId, userId } = req.body;
+        const [results] = await db.execute('SELECT Count(*) as IsSolved FROM QuizResults WHERE QuizId = ? AND UserId = ? AND IsActive = 1', [quizId, userId]);
+        res.json(results);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+
+// Get Active Quiz Details
+app.get("/api/quiz/:quizId", async (req, res) => {
+    const quizId = req.params.quizId;
+    try {
+        const [result] = await db.execute(
+            "SELECT * FROM Quiz WHERE QuizId = ? AND IsActive = 1",
+            [quizId]
+        );
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Quiz not found" });
+        }
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// Get User Quiz Result (Only Active Results)
+app.get("/api/quiz/result/:quizId/:userId", async (req, res) => {
+    const { quizId, userId } = req.params;
+    try {
+        const [result] = await db.execute(
+            "SELECT * FROM QuizResults WHERE QuizId = ? AND UserId = ? AND IsActive = 1",
+            [quizId, userId]
+        );
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Result not found" });
+        }
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+app.get("/api/quiz/questions/:quizId/:userId", async (req, res) => {
+    const { quizId, userId } = req.params;
+    const query = `
+        SELECT q.QuestionId, q.QuestionText, 
+               q.Option1, q.Option2, q.Option3, q.Option4,
+               a.SelectedOption, q.CorrectOption, a.IsCorrect
+        FROM QuizQuestions q
+        JOIN UserAnswers a ON q.QuestionId = a.QuestionId
+        WHERE a.QuizId = ? AND a.UserId = ? AND q.IsActive = 1 AND a.IsActive = 1;
+    `;
+    try {
+        const [result] = await db.execute(query, [quizId, userId]);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json(error);
     }
 });
 

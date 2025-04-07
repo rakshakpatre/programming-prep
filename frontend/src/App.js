@@ -7,6 +7,7 @@ import UserDashboard from "./pages/user/UserDashboard";
 import UserExplore from "./pages/user/UserExplore";
 import UserQuiz from "./pages/user/UserQuiz";
 import UserQuizExam from "./pages/user/UserQuizExam";
+import UserSolvedQuiz from "./pages/user/UserSolvedQuiz";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminQuiz from "./pages/admin/AdminQuiz";
 import AdminQuizList from "./pages/admin/AdminQuizList";
@@ -47,6 +48,11 @@ function App() {
             <Route path="/user-quiz-exam" element={
               <SignedIn>
                 <UserQuizExam />
+              </SignedIn>
+            } />
+            <Route path="/user-solved-quiz" element={
+              <SignedIn>
+                <UserSolvedQuiz />
               </SignedIn>
             } />
             <Route path="/user-explore" element={
