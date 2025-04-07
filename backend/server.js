@@ -8,7 +8,7 @@ const app = express();
 // const router = express.Router();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static("uploads")); 
+app.use("/uploads", express.static("uploads"));
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -25,10 +25,10 @@ const upload = multer({ storage });
 app.post("/api/notes/add", upload.single("file"), async (req, res) => {
     try {
         const { title, content, user_id, isPublic } = req.body;
-        const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+        const file_path = req.file ? `/uploads/${req.file.filename}` : null;
 
-          // Convert isPublic from "true"/"false" string to integer (1 or 0)
-          const isPublicInt = isPublic === "true" ? 1 : 0;
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = isPublic === "true" ? 1 : 0;
 
         if (!title || !content || !user_id) {
             return res.status(400).json({ error: "All fields are required" });
@@ -39,7 +39,17 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
             [title, content, user_id, file_path, isPublicInt]
         );
 
-        res.json({noteId: result.insertId, title, content, user_id, isPublic  });
+        res.json({
+            message: "Notes added Successfully!!",
+            notes: {
+                id: result.insertId,
+                title: title,
+                content: content,
+                user_id: user_id,
+                file_path: file_path,
+                isPublic: isPublic
+            }
+        });
     } catch (error) {
         console.error("Error adding note:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -392,7 +402,7 @@ app.post("/api/notes/update-note", upload.single("file"), async (req, res) => {
     try {
         // Convert isPublic from "true"/"false" string to integer (1 or 0)
         const isPublicInt = isPublic === "true" ? 1 : 0;
-        
+
         // Check if the note exists
         const [notes] = await db.query("SELECT * FROM notes WHERE id = ?", [id]);
 
@@ -465,35 +475,34 @@ app.post("/addQuiz", async (req, res) => {
     const { title, description, noOfQue } = req.body;
 
     if (!title || !description || !noOfQue) {
-        return res.status(400).json({ error: "Please provide attributes!" });
+        return res.status(400).json({ error: "Please provide all required attributes!" });
     }
 
     const sql = "INSERT INTO Quiz (QuizName, QuizDescription, NumberOfQue) VALUES (?, ?, ?)";
-    try {
-        const [result] = await db.execute(sql, [title, description, Number(noOfQue)]);
 
-        if (!result) {
+    try {
+        const [result] = await db.execute(sql, [title, description, noOfQue]);
+
+        if (!result || !result.insertId) {
             return res.status(500).json({ error: "No result returned from database" });
         }
 
-        const responseData = { message: "Quiz added successfully", id: result.insertId };
-
-        if (!res.headersSent) {
-            return res.status(200).json(responseData);
-        } else {
-            console.error("Headers already sent, cannot send response");
-        }
+        return res.status(200).json({
+            message: "Quiz added Successfully!",
+            quiz: {
+                QuizId: result.insertId,
+                QuizName: title,
+                QuizDescription: description,
+                NumberOfQue: noOfQue
+            }
+        });
 
     } catch (error) {
         console.error("Database Error:", error);
-
-        if (!res.headersSent) {
-            return res.status(500).json({ error: error.message });
-        } else {
-            console.error("Headers already sent, cannot send error response");
-        }
+        return res.status(500).json({ error: error.message });
     }
 });
+
 
 
 app.get("/api/quizzes", async (req, res) => {
@@ -511,23 +520,33 @@ app.post('/add-question', async (req, res) => {
     try {
         const { QuizId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption } = req.body;
 
-        if (!QuizId || !QuestionText || !Option1 || !Option2 || !Option3 || !Option4 || !CorrectOption) {
-            console.log("All fields are required!");
+        if (!QuizId || !QuestionText || !Option1 || !Option2 || !Option3 || !Option4 || CorrectOption === undefined) {
+            // console.log("❌ All fields are required!");
             return res.status(400).json({ error: "All fields are required!" });
         }
 
         const sql = `INSERT INTO QuizQuestions (QuizId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption) 
                      VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
-        const [result] = await db.query(sql, [Number(QuizId), QuestionText, Option1, Option2, Option3, Option4, CorrectOption]);
+        const [result] = await db.execute(sql, [Number(QuizId), QuestionText, Option1, Option2, Option3, Option4, Number(CorrectOption)]);
 
-        res.json({ message: "Question created successfully!", questionId: result.insertId });
+        if (!result || !result.insertId) {
+            console.log("❌ Failed to insert question into database.");
+            return res.status(500).json({ error: "Failed to insert question into database." });
+        }
+        res.status(201).json({
+            message: "Question added successfully!",
+            QuestionId: result.insertId
+        });
+
 
     } catch (err) {
-        console.error("Database error:", err);
-        res.status(500).json({ error: "Database error" });
+        console.error("❌ Database error:", err);
+        res.status(500).json({ error: err.message || "Database error" });
     }
 });
+
+
 
 
 app.get("/get-question-count/:quizId", async (req, res) => {
@@ -765,6 +784,128 @@ app.get("/api/admin-notes/public", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch public notes" });
     }
 });
+
+
+// Fetch quiz questions
+app.get('/quiz/:quizId', async (req, res) => {
+    try {
+        const quizId = req.params.quizId;
+        const [results] = await db.execute('SELECT * FROM QuizQuestions WHERE QuizId = ? AND IsActive = 1', [quizId]);
+        res.json(results);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+// Submit quiz answers
+app.post('/submit-quiz', async (req, res) => {
+    try {
+        const { userId, quizId, answers } = req.body;
+        let obtainedMarks = 0;
+
+        for (const ans of answers) {
+            const { questionId, selectedOption } = ans;
+            const [result] = await db.execute('SELECT CorrectOption FROM QuizQuestions WHERE QuestionId = ? AND IsActive = 1', [questionId]);
+
+            if (result.length > 0 && result[0].CorrectOption == selectedOption) {
+                obtainedMarks++;
+            }
+
+            await db.execute('INSERT INTO UserAnswers (UserId, QuizId, QuestionId, SelectedOption, IsCorrect) VALUES (?, ?, ?, ?, ?)', [
+                userId, quizId, questionId, selectedOption, result.length > 0 && result[0].CorrectOption == selectedOption
+            ]);
+        }
+
+        // Calculate result
+        const [quizResult] = await db.execute('SELECT NumberOfQue FROM Quiz WHERE QuizId = ? AND IsActive = 1', [quizId]);
+
+        if (quizResult.length === 0) {
+            console.error("Quiz not found for QuizId:", quizId);
+            return res.status(400).json({ error: "Quiz not found" });
+        }
+
+        const totalMarks = quizResult[0].NumberOfQue;
+        const percentage = totalMarks > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
+        const status = percentage >= 40 ? 'Pass' : 'Fail';
+
+        await db.execute('INSERT INTO QuizResults (UserId, QuizId, TotalMarks, ObtainedMarks, Percentage, Status) VALUES (?, ?, ?, ?, ?, ?)', [
+            userId, quizId, totalMarks, obtainedMarks, percentage, status
+        ]);
+
+        res.json({ obtainedMarks, totalMarks, percentage, status });
+    } catch (err) {
+        console.error("Submit Quiz Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// Fetch quiz questions
+app.post('/checkIsQuizSolved', async (req, res) => {
+    try {
+        const { quizId, userId } = req.body;
+        const [results] = await db.execute('SELECT Count(*) as IsSolved FROM QuizResults WHERE QuizId = ? AND UserId = ? AND IsActive = 1', [quizId, userId]);
+        res.json(results);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+
+// Get Active Quiz Details
+app.get("/api/quiz/:quizId", async (req, res) => {
+    const quizId = req.params.quizId;
+    try {
+        const [result] = await db.execute(
+            "SELECT * FROM Quiz WHERE QuizId = ? AND IsActive = 1",
+            [quizId]
+        );
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Quiz not found" });
+        }
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+// Get User Quiz Result (Only Active Results)
+app.get("/api/quiz/result/:quizId/:userId", async (req, res) => {
+    const { quizId, userId } = req.params;
+    try {
+        const [result] = await db.execute(
+            "SELECT * FROM QuizResults WHERE QuizId = ? AND UserId = ? AND IsActive = 1",
+            [quizId, userId]
+        );
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Result not found" });
+        }
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
+app.get("/api/quiz/questions/:quizId/:userId", async (req, res) => {
+    const { quizId, userId } = req.params;
+    const query = `
+        SELECT q.QuestionId, q.QuestionText, 
+               q.Option1, q.Option2, q.Option3, q.Option4,
+               a.SelectedOption, q.CorrectOption, a.IsCorrect
+        FROM QuizQuestions q
+        JOIN UserAnswers a ON q.QuestionId = a.QuestionId
+        WHERE a.QuizId = ? AND a.UserId = ? AND q.IsActive = 1 AND a.IsActive = 1;
+    `;
+    try {
+        const [result] = await db.execute(query, [quizId, userId]);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
+
 
 //-------------------------- Start Server----------------------------
 

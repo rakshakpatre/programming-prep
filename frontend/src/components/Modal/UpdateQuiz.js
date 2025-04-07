@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import EditIcon from '@mui/icons-material/Edit';
 
-export default function UpdateQuiz({ updateQuizId }) {
+export default function UpdateQuiz({ updateQuizId, fetchQuizzes }) {
 
     const [quizName, setQuizName] = useState("");
     const [noOfQue, setNoOfQue] = useState("");
@@ -86,6 +86,7 @@ export default function UpdateQuiz({ updateQuizId }) {
 
             if (data && data.message) {
                 alert(data.message);
+                fetchQuizzes();
                 setQuizName("");
                 setNoOfQue("");
                 setDescription("");
@@ -95,14 +96,17 @@ export default function UpdateQuiz({ updateQuizId }) {
                 const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) {
                     modalInstance.hide();
-                    // ✅ Remove the remaining backdrop manually
-                    const modalBackdrop = document.querySelector(".modal-backdrop");
-                    if (modalBackdrop) {
-                        modalBackdrop.remove();
-                    }
 
-                    // ✅ Remove 'modal-open' class from body
-                    document.body.classList.remove("modal-open");
+                    // Wait a bit for Bootstrap's animation to complete, then clean up
+                    setTimeout(() => {
+                        // ✅ Remove all modal backdrops
+                        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+                        // ✅ Restore scrolling
+                        document.body.classList.remove("modal-open");
+                        document.body.style.overflow = "auto";
+                        document.body.style.paddingRight = "";
+                    }, 300); // Slight delay ensures Bootstrap animation completes
                 }
 
             } else {

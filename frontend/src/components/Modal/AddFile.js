@@ -55,14 +55,24 @@ export default function AddFile({ fetchNotes }) {
       const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
       if (modalInstance) {
         modalInstance.hide();
-        const modalBackdrop = document.querySelector(".modal-backdrop");
-        if (modalBackdrop) {
-          modalBackdrop.remove();
-        }
-        document.body.classList.remove("modal-open");
+
+        // Wait a bit for Bootstrap's animation to complete, then clean up
+        setTimeout(() => {
+          // ✅ Remove all modal backdrops
+          document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+          // ✅ Restore scrolling
+          document.body.classList.remove("modal-open");
+          document.body.style.overflow = "auto";
+          document.body.style.paddingRight = "";
+        }, 300); // Slight delay ensures Bootstrap animation completes
       }
 
+      // ✅ Remove the modal backdrop (fix lingering dark overlay)
+      document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
       fetchNotes();
+
     } catch (error) {
       console.error("Error adding note:", error);
       // alert("Error adding note. Try again!");

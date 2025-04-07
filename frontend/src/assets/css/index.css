@@ -74,11 +74,11 @@ body {
 }
 
 .purple-600 {
-  color: #59359a;
+  color: #59359a !important;
 }
 
 .purple-700 {
-  color: #432874;
+  color: #432874 !important;
 }
 
 .purple-700-bg {

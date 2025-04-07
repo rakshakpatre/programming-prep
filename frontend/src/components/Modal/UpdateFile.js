@@ -10,7 +10,7 @@ function UpdateFile({ noteData, modalRefEdit, fetchNotes }) {
 
     useEffect(() => {
         if (noteData) {
-            setFile(null); 
+            setFile(null);
             setTitle(noteData.title || "");
             setContent(noteData.content || "");
             setIsPublic(noteData.isPublic);
@@ -18,61 +18,66 @@ function UpdateFile({ noteData, modalRefEdit, fetchNotes }) {
     }, [noteData]);
 
     const updateFile = async () => {
-        setLoading(true); 
-        
+        setLoading(true);
+
         const formData = new FormData();
         formData.append("id", noteData.id);
         formData.append("title", title);
         formData.append("content", content);
         formData.append("isPublic", isPublic);
         if (file) formData.append("file", file);
-    
+
         try {
             const res = await fetch("http://localhost:5000/api/notes/update-note", {
                 method: "POST",
                 body: formData,
             });
-    
+
             const responseData = await res.json();
             console.log("Server Response:", responseData);
-    
+
             if (!res.ok) throw new Error("Failed to update note");
-    
-    
+
+
             // ✅ Use responseData instead of 'data'
             if (responseData && responseData.message) {
                 alert(responseData.message);
-                
+                fetchNotes();
                 // ✅ Reset input fields after success
                 setTitle("");
                 setContent("");
                 setIsPublic(true);
-    
+
                 // ✅ Close Modal Properly
                 const modalElement = document.getElementById("updateFile");
                 const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) {
                     modalInstance.hide();
+
+                    // Wait a bit for Bootstrap's animation to complete, then clean up
+                    setTimeout(() => {
+                        // ✅ Remove all modal backdrops
+                        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+
+                        // ✅ Restore scrolling
+                        document.body.classList.remove("modal-open");
+                        document.body.style.overflow = "auto";
+                        document.body.style.paddingRight = "";
+                    }, 300); // Slight delay ensures Bootstrap animation completes
                 }
-    
-                // ✅ Remove any remaining modal backdrop
-                setTimeout(() => {
-                    const modalBackdrop = document.querySelector(".modal-backdrop");
-                    if (modalBackdrop) {
-                        modalBackdrop.remove();
-                    }
-                    document.body.classList.remove("modal-open");
-                }, 100); 
+
+                // ✅ Remove the modal backdrop (fix lingering dark overlay)
+                document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
             }
-    
-            fetchNotes(); 
+
+            fetchNotes();
         } catch (error) {
             console.error("Error updating file:", error);
         } finally {
-            setLoading(false); 
+            setLoading(false);
         }
     };
-    
+
 
     return (
         <div className="modal fade" id="updateFile" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" ref={modalRefEdit}>

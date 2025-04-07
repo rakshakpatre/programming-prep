@@ -16,7 +16,7 @@ const AuthContext = () => {
     // Avoid unnecessary redirects
     if (role === "admin" && !["/admin-dashboard", "/admin-quiz", "/admin-files", "/admin-quiz-list"].includes(path)) {
       navigate("/admin-dashboard");
-    } else if (role !== "admin" && !["/user-dashboard", "/user-quiz", "/user-explore"].includes(path)) {
+    } else if (role !== "admin" && !["/user-dashboard", "/user-quiz", "/user-quiz-exam", "/user-explore", "/user-solved-quiz"].includes(path)) {
       navigate("/user-dashboard");
     }
   }, [isLoaded, user, location.pathname, navigate]); // Add location.pathname to dependencies
