@@ -766,38 +766,6 @@ app.get("/api/admin-notes/public", async (req, res) => {
     }
 });
 
-// app.get("/api/admin-notes", async (req, res) => {
-//     const { admin_id } = req.query;
-//     if (!admin_id) return res.status(400).json({ error: "User ID is required" });
-
-//     try {
-//         const [notes] = await db.query(
-//             "SELECT * FROM Admin_notes WHERE admin_id = ? AND IsActive = 1 ORDER BY created_at DESC",
-//             [admin_id]
-//         );
-//         res.json(notes);
-//     } catch (error) {
-//         console.error("Error fetching notes:", error);
-//         res.status(500).json({ error: "Failed to fetch notes" });
-//     }
-// });
-
-
-// app.get("/api/admin-notes", async (req, res) => {
-//     try {
-//         const [notes] = await db.query(
-//             "SELECT * FROM Admin_notes WHERE IsActive = 1 ORDER BY created_at DESC"
-//         );
-//         res.json(notes);
-//     } catch (error) {
-//         console.error("Error fetching notes:", error);
-//         res.status(500).json({ error: "Failed to fetch notes" });
-//     }
-// });
-
-
-
-
 //-------------------------- Start Server----------------------------
 
 const PORT = process.env.PORT || 5000;
