@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useUser } from "@clerk/clerk-react";
 import AddFileModal from "../Modal/AddFile";
 import DeleteIcon from '@mui/icons-material/Delete'

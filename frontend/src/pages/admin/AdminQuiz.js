@@ -2,7 +2,7 @@ import React from 'react'
 import Navbar from '../../components/Navbar';
 import AddQuizModal from '../../components/Modal/AddQuiz';
 import QuizIcon from "@mui/icons-material/Quiz";
-import DisplayQuiz from "../../components/Display/DisplayQuiz";
+import DisplayAdminQuiz from "../../components/Display/DisplayAdminQuiz";
 
 
 export default function Quiz() {
@@ -10,7 +10,7 @@ export default function Quiz() {
         <>
             <Navbar />
             <div className="container mt-4">
-                <div className="text-center">
+                <div className="d-flex justify-content-center">
                     <button
                         type="button"
                         className="btn btn-primary rounded-pill mx-2"
@@ -21,7 +21,7 @@ export default function Quiz() {
                     </button>
                 </div>
             </div>
-            <DisplayQuiz />
+            <DisplayAdminQuiz />
             <AddQuizModal />
         </>
     )

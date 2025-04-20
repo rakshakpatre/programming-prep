@@ -1,6 +1,6 @@
 import React from 'react'
 import Navbar from '../../components/Navbar';
-import DisplayQuiz from '../../components/Display/DisplayQuiz';
+import DisplayUserQuiz from '../../components/Display/DisplayUserQuiz';
 
 
 export default function UserQuiz() {
@@ -8,7 +8,7 @@ export default function UserQuiz() {
     return (
         <>
             <Navbar />
-            <DisplayQuiz />
+            <DisplayUserQuiz />
         </>
     )
 }

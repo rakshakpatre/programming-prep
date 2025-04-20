@@ -3,12 +3,15 @@ import cors from "cors";
 import multer from "multer";
 import path from "path";
 import db from "./config/db.js";
+import { Clerk } from '@clerk/clerk-sdk-node';
 
 const app = express();
+const clerk = Clerk({ secretKey: process.env.REACT_APP_CLERK_PUBLISHABLE_KEY });
 // const router = express.Router();
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
+
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -62,29 +65,29 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
 app.post("/api/links/addLink", async (req, res) => {
     try {
 
-      const { linktitle, linkcontent, user_id, url , isPublic } = req.body;
-       // Convert isPublic from "true"/"false" string to integer (1 or 0)
-       const isPublicInt = isPublic === "true" ? 1 : 0;
+        const { linktitle, linkcontent, user_id, url, isPublic } = req.body;
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = isPublic === "true" ? 1 : 0;
 
-  
-      if (!linktitle || !linkcontent || !user_id || !url) {
-        console.error("Missing fields:", req.body);
-        return res.status(400).json({ error: "All fields are required" });
-      }
-  
-      const [result] = await db.execute(
-        "INSERT INTO links (linktitle, linkcontent, user_id, url , isPublic) VALUES (?, ?, ?, ?, ?)",
-        [linktitle, linkcontent, user_id, url, isPublicInt]
-      );
-  
-    //   console.log("Data inserted:", result);
-    res.json({linkId: result.insertId, linktitle, linkcontent, user_id, url, isPublic  });
-  
+
+        if (!linktitle || !linkcontent || !user_id || !url) {
+            console.error("Missing fields:", req.body);
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        const [result] = await db.execute(
+            "INSERT INTO links (linktitle, linkcontent, user_id, url , isPublic) VALUES (?, ?, ?, ?, ?)",
+            [linktitle, linkcontent, user_id, url, isPublicInt]
+        );
+
+        //   console.log("Data inserted:", result);
+        res.json({ linkId: result.insertId, linktitle, linkcontent, user_id, url, isPublic });
+
     } catch (error) {
-      console.error("SQL Error:", error.sqlMessage);
-      res.status(500).json({ error: "Internal Server Error", details: error.message });
+        console.error("SQL Error:", error.sqlMessage);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
-  });
+});
 
 //------------------Fetch Notes for Logged-in User--------------------------
 
@@ -441,7 +444,7 @@ app.post("/api/links/update-link", async (req, res) => {
     try {
         // Convert isPublic from "true"/"false" string to integer (1 or 0)
         const isPublicInt = isPublic === "true" ? 1 : 0;
-        
+
         // Check if the note exists
         const [links] = await db.query("SELECT * FROM links WHERE id = ?", [id]);
 
@@ -721,7 +724,7 @@ app.post("/api/admin-notes/add", upload.single("file"), async (req, res) => {
         console.log("Uploaded File:", req.file);
 
         const { title, content, admin_id, isPublic } = req.body;
-        const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+        const file_path = req.file ? `/uploads/${req.file.filename}` : null;
 
         // Convert `isPublic` properly to an integer (1 or 0)
         const isPublicInt = parseInt(isPublic, 10);
@@ -840,18 +843,6 @@ app.post('/submit-quiz', async (req, res) => {
 });
 
 
-// Fetch quiz questions
-app.post('/checkIsQuizSolved', async (req, res) => {
-    try {
-        const { quizId, userId } = req.body;
-        const [results] = await db.execute('SELECT Count(*) as IsSolved FROM QuizResults WHERE QuizId = ? AND UserId = ? AND IsActive = 1', [quizId, userId]);
-        res.json(results);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
-
-
 // Get Active Quiz Details
 app.get("/api/quiz/:quizId", async (req, res) => {
     const quizId = req.params.quizId;
@@ -903,6 +894,164 @@ app.get("/api/quiz/questions/:quizId/:userId", async (req, res) => {
         res.json(result);
     } catch (error) {
         res.status(500).json(error);
+    }
+});
+
+
+
+
+app.get('/api/solved-quizzes/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const [results] = await db.query(
+            "SELECT DISTINCT QuizId FROM QuizResults WHERE UserId = ? AND IsActive = 1",
+            [userId]
+        );
+        res.json(results); // returns [{ QuizId: 1 }, { QuizId: 2 }]
+    } catch (error) {
+        console.error("Error fetching solved quizzes:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+app.get('/api/solved-quiz-report/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const [results] = await db.query(`
+            SELECT 
+                q.QuizName, 
+                r.ObtainedMarks, 
+                r.TotalMarks, 
+                r.Percentage, 
+                r.Status,
+                r.created_at AS AttemptDate
+            FROM QuizResults r
+            JOIN Quiz q ON r.QuizId = q.QuizId
+            WHERE r.UserId = ? AND r.IsActive = 1
+        `, [userId]);
+
+        res.json(results); // Array of quiz result objects
+    } catch (error) {
+        console.error("Error fetching quiz report:", error);
+        res.status(500).json({ error: "Failed to fetch quiz report" });
+    }
+});
+
+app.get('/get-quiz-analysis/:quizId', async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz
+        const [quizRows] = await db.execute('SELECT * FROM Quiz WHERE QuizId = ?', [quizId]);
+        if (quizRows.length === 0) return res.status(404).json({ message: 'Quiz not found' });
+
+        const quiz = quizRows[0];
+
+        // Fetch quiz results
+        const [results] = await db.execute(
+            'SELECT UserId, TotalMarks, ObtainedMarks, Percentage, Status FROM QuizResults WHERE QuizId = ?',
+            [quizId]
+        );
+
+        if (results.length === 0) return res.status(404).json({ message: 'No results found for this quiz' });
+
+        // Extract unique UserIds
+        const userIds = [...new Set(results.map(r => r.UserId))];
+
+        if (userIds.length === 0) {
+            return res.json({ quiz, results: [] });
+        }
+
+        // Fetch users from local Users table
+        const [users] = await db.execute(
+            `SELECT UserId, CONCAT(FirstName, ' ', LastName) AS name FROM Users WHERE UserId IN (${userIds.map(() => '?').join(',')}) AND IsActive = 1`,
+            userIds
+        );
+
+        // Create map of userId => name
+        const userMap = Object.fromEntries(users.map(user => [user.UserId, user.name]));
+
+        // Map results with user names
+        const fullResults = results.map(result => ({
+            name: userMap[result.UserId] || 'Unknown User',
+            percentage: result.Percentage,
+            status: result.Status,
+        }));
+
+        res.json({ quiz, results: fullResults });
+
+    } catch (err) {
+        console.error('Error in /get-quiz-analysis:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/api/quiz-results/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const [results] = await db.execute(
+            `SELECT QuizId, Percentage, Status 
+             FROM QuizResults 
+             WHERE UserId = ? AND IsActive = 1`,
+            [userId]
+        );
+
+        res.json(results);
+    } catch (error) {
+        console.error("Error fetching quiz results:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
+app.post('/clerk/webhook', express.json(), async (req, res) => {
+    const event = req.body;
+
+    try {
+        const user = event.data;
+
+        const userId = user.id;
+        const email = user.email_addresses?.[0]?.email_address || '';
+        const firstName = user.first_name || '';
+        const lastName = user.last_name || '';
+        const role = user.public_metadata?.role || 'student';
+
+        if (event.type === 'user.created') {
+            await db.execute(
+                'INSERT INTO Users (UserId, Email, FirstName, LastName, Role, IsActive) VALUES (?, ?, ?, ?, ?, ?)',
+                [userId, email, firstName, lastName, role, 1]
+            );
+            console.log(`✅ New user created: ${email}`);
+        }
+
+        else if (event.type === 'user.updated') {
+            const isActive = user.banned ? 0 : 1;
+
+            await db.execute(
+                'UPDATE Users SET FirstName = ?, LastName = ?, Email = ?, Role = ?, IsActive = ? WHERE UserId = ?',
+                [firstName, lastName, email, role, isActive, userId]
+            );
+            console.log(`🔄 User updated: ${email}, IsActive = ${isActive}`);
+        }
+
+        else if (event.type === 'user.deleted') {
+            await db.execute(
+                'UPDATE Users SET IsActive = ? WHERE UserId = ?',
+                [0, userId]
+            );
+            console.log(`❌ User deleted: ${userId} → IsActive = 0`);
+        }
+
+        res.status(200).send('Webhook handled');
+    } catch (err) {
+        console.error('❗ Webhook error:', err);
+        res.status(500).send('Error handling Clerk webhook');
     }
 });
 
