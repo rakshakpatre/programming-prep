@@ -1,15 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+
 import FileViewerModal from '../FileViewerModal'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 import Button from 'react-bootstrap/Button';
 import DisplayPublicLink from "./DisplayPublicLink";
 
 function DisplayPublic() {
     const { user } = useUser();
+    const location = useLocation();
+    const navigate = useNavigate();
     const [publicNotes, setPublicNotes] = useState([]);
     const [selectedNote, setSelectedNote] = useState(null);
     const modalRef = useRef(null);
@@ -32,6 +37,28 @@ function DisplayPublic() {
             fetchPublicNotes();
         }
     }, [user]);
+
+    // const fetchPublicNotes = async () => {
+    //     try {
+    //         const res = await fetch(`http://localhost:5000/api/notes/public`);
+    //         const data = await res.json();
+
+    //         // Filter out the user's own notes
+    //         const otherUsersPublicNotes = data.filter(note => note.userId !== user?.id);
+
+    //         setPublicNotes(otherUsersPublicNotes);
+    //     } catch (error) {
+    //         console.error("Error fetching public notes:", error);
+    //     }
+    // };
+
+    // // Load notes when user logs in
+    // useEffect(() => {
+    //     if (user?.id) {
+    //         fetchPublicNotes();
+    //     }
+    // }, [user]);
+
 
     //------------------ Increment View count for a Public note---------------------------
 
@@ -165,12 +192,13 @@ function DisplayPublic() {
 
     return (
         <>
-            <div className="container mt-3">
+            {location.pathname === "/user-dashboard" ? (
+                <div className="container mt-3">
                 <h3 className="text-center mb-3 purple fw-bold">Public Notes & Links from Other Users</h3>
                 <div className="row">
                     {publicNotes.length > 0 ? (
                         publicNotes
-                            .filter(note => note.user_id !== user.id)
+                            .filter(note => note.user_id !== user.id && note.isPublic === 1) // Only other users' public notes
                             .slice(0, visibleLinks)
                             .map(note => (
                                 <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
@@ -183,17 +211,14 @@ function DisplayPublic() {
                                                 <div className="card-body d-flex flex-column h-100">
                                                     <h5 className="card-title purple-500">
                                                         {note.title}
-                                                        {note.isPublic === 1 && (
-                                                            <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                                                        )}
-                                                        {note.isPublic === 0 && (
-                                                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                                                        )}
+                                                        <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                     </h5>
-                                                    <p className="card-text flex-grow-1">{note.content.length > 50
-                                                        ? `${note.content.substring(0, 50)}...`
-                                                        : note.content}</p>
-                                                    {note.user_id !== user.id && note.firstName && note.lastName && (
+                                                    <p className="card-text flex-grow-1">
+                                                        {note.content.length > 50
+                                                            ? `${note.content.substring(0, 50)}...`
+                                                            : note.content}
+                                                    </p>
+                                                    {note.firstName && note.lastName && (
                                                         <p className="card-text mb-1">
                                                             <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
                                                         </p>
@@ -219,32 +244,91 @@ function DisplayPublic() {
                     ) : (
                         <p>No notes found</p>
                     )}
+        
                     <DisplayPublicLink />
-
                 </div>
-
-                {publicNotes.filter(note => note.user_id !== user.id).length > 3 && (
+        
+                {publicNotes.length > 3 && (
                     <div className="text-end mt-3">
-                        {visibleLinks < publicNotes.filter(note => note.user_id !== user.id).length ? (
-                            <Button variant="primary" onClick={() => setVisibleLinks(publicNotes.filter(note => note.user_id !== user.id).length)}>
-                                <KeyboardArrowDownIcon /> View More
-                            </Button>
-                        ) : (
-                            <Button variant="secondary" onClick={() => setVisibleLinks(3)}>
-                                <KeyboardArrowUpIcon /> View Less
-                            </Button>
-                        )}
+                        <Button variant="primary" onClick={() => navigate("/user-explore?type=userpublicnotes")}>
+                            <ArrowRightIcon /> Explore All
+                        </Button>
                     </div>
                 )}
             </div>
+            ) : (
+                <div className="container-fluid mt-3">
+                    <div className="text-start">
+                        <button className="btn btn-primary" onClick={() => navigate("/user-dashboard")}>
+                            <ArrowBackIcon /> Back to Dashboard
+                        </button>
+                    </div>
+                    <h3 className="text-center mb-3 purple fw-bold">Public Notes & Links from Other Users</h3>
+                    <div className="row">
+                        {publicNotes.length > 0 ? (
+                            publicNotes
+                            .filter(note => note.user_id !== user.id && note.isPublic === 1)
+                                .map(note => (
+                                    <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
+                                        <div className="border border-primary p-1 card shadow" style={{ height: '170px' }}>
+                                            <div className="row g-0 p-1">
+                                                <div className="col-2 d-flex justify-content-center align-items-center">
+                                                    <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                </div>
+                                                <div className="col-9">
+                                                    <div className="card-body d-flex flex-column h-100">
+                                                        <h5 className="card-title purple-500">
+                                                            {note.title}
+                                                            {note.isPublic === 1 && (
+                                                                <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                            )}
+                                                            {note.isPublic === 0 && (
+                                                                <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                                            )}
+                                                        </h5>
+                                                        <p className="card-text flex-grow-1">{note.content.length > 50
+                                                            ? `${note.content.substring(0, 50)}...`
+                                                            : note.content}</p>
+                                                        {note.user_id !== user.id && note.firstName && note.lastName && (
+                                                            <p className="card-text mb-1">
+                                                                <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
+                                                            </p>
+                                                        )}
+                                                        <p className="card-text mb-1 d-flex justify-content-between">
+                                                            <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
+                                                            <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className='col-1 d-flex align-items-start flex-column'>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleDownloadNoteUser(note)}>
+                                                        <CloudDownloadIcon color="action" />
+                                                    </button>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleViewNoteUser(note)}>
+                                                        <VisibilityIcon color="info" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                        ) : (
+                            <p>No notes found</p>
+                        )}
+                        <DisplayPublicLink />
 
-                <FileViewerModal
-                    modalRef={modalRef}
-                    fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
-                    fileType="docx"
-                    title={selectedNote?.title}
-                    content={selectedNote?.content}
-                />
+                    </div>
+
+                </div>
+            )}
+
+            <FileViewerModal
+                modalRef={modalRef}
+                fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
+                fileType="docx"
+                title={selectedNote?.title}
+                content={selectedNote?.content}
+            />
         </>
     );
 

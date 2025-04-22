@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import EditIcon from '@mui/icons-material/Edit';
-import { Modal } from "bootstrap";
 
 
 export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions }) {

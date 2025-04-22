@@ -10,8 +10,10 @@ import LinkIcon from '@mui/icons-material/AddLink';
 // import ThemeButton from '../../components/ThemeButton';
 // import DisplayFile from '../../components/Display/DisplayFile';
 import AdminAddFile from '../../components/Modal/AdminAddFile';
-import AddLink from "../../components/Modal/AddLink";
+// import AddLink from "../../components/Modal/AddLink";
 import AdminDisplayFile from "../../components/Display/AdminDisplayFile";
+import AdminAddLink from '../../components/Modal/AdminAddLink';
+import AdminDisplayLink from '../../components/Display/AdminDisplayLink';
 
 
 function AdminDashboard() {
@@ -41,12 +43,13 @@ function AdminDashboard() {
           </button>
         </div>
         <AdminAddFile />
-        <AddLink />
+        <AdminAddLink />
         {/* <ThemeButton /> */}
       </div>
-      <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-5">
+      <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-2">
         <div className="row">
          <AdminDisplayFile/>
+         <AdminDisplayLink/>
         </div>
       </div>
     </>

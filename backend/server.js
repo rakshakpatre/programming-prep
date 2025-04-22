@@ -27,8 +27,8 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
         const { title, content, user_id, isPublic } = req.body;
         const file_path = req.file ? `/uploads/${req.file.filename}` : null;
 
-        // Convert isPublic from "true"/"false" string to integer (1 or 0)
-        const isPublicInt = isPublic === "true" ? 1 : 0;
+        // Convert isPublic from string "1" or "0" to integer
+        const isPublicInt = parseInt(isPublic) === 1 ? 1 : 0;
 
         if (!title || !content || !user_id) {
             return res.status(400).json({ error: "All fields are required" });
@@ -39,15 +39,15 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
             [title, content, user_id, file_path, isPublicInt]
         );
 
-        res.json({
+        return res.status(200).json({
             message: "Notes added Successfully!!",
-            notes: {
+            note: {
                 id: result.insertId,
                 title: title,
                 content: content,
                 user_id: user_id,
                 file_path: file_path,
-                isPublic: isPublic
+                isPublic: isPublicInt
             }
         });
     } catch (error) {
@@ -57,34 +57,34 @@ app.post("/api/notes/add", upload.single("file"), async (req, res) => {
 });
 
 
+
 // ---------------------------- Add a new links ----------------------------
 
 app.post("/api/links/addLink", async (req, res) => {
     try {
 
-      const { linktitle, linkcontent, user_id, url , isPublic } = req.body;
-       // Convert isPublic from "true"/"false" string to integer (1 or 0)
-       const isPublicInt = isPublic === "true" ? 1 : 0;
+        const { linktitle, linkcontent, user_id, url, isPublic } = req.body;
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = parseInt(isPublic) === 1 ? 1 : 0;
 
-  
-      if (!linktitle || !linkcontent || !user_id || !url) {
-        console.error("Missing fields:", req.body);
-        return res.status(400).json({ error: "All fields are required" });
-      }
-  
-      const [result] = await db.execute(
-        "INSERT INTO links (linktitle, linkcontent, user_id, url , isPublic) VALUES (?, ?, ?, ?, ?)",
-        [linktitle, linkcontent, user_id, url, isPublicInt]
-      );
-  
-    //   console.log("Data inserted:", result);
-    res.json({linkId: result.insertId, linktitle, linkcontent, user_id, url, isPublic  });
-  
+        if (!linktitle || !linkcontent || !user_id || !url) {
+            console.error("Missing fields:", req.body);
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        const [result] = await db.execute(
+            "INSERT INTO links (linktitle, linkcontent, user_id, url , isPublic) VALUES (?, ?, ?, ?, ?)",
+            [linktitle, linkcontent, user_id, url, isPublicInt]
+        );
+
+        //   console.log("Data inserted:", result);
+        res.json({ linkId: result.insertId, linktitle, linkcontent, user_id, url, isPublic });
+
     } catch (error) {
-      console.error("SQL Error:", error.sqlMessage);
-      res.status(500).json({ error: "Internal Server Error", details: error.message });
+        console.error("SQL Error:", error.sqlMessage);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
     }
-  });
+});
 
 //------------------Fetch Notes for Logged-in User--------------------------
 
@@ -149,7 +149,6 @@ app.get("/api/links/public", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch public links" });
     }
 });
-
 
 
 //------------------------- Delete Notes -----------------------------
@@ -431,7 +430,7 @@ app.post("/api/notes/update-note", upload.single("file"), async (req, res) => {
     }
 });
 
-//-------------------------------- API to Update Note -------------------------------------
+//-------------------------------- API to Update Link -------------------------------------
 
 app.post("/api/links/update-link", async (req, res) => {
     const { id, url, linktitle, linkcontent, isPublic } = req.body;
@@ -441,7 +440,7 @@ app.post("/api/links/update-link", async (req, res) => {
     try {
         // Convert isPublic from "true"/"false" string to integer (1 or 0)
         const isPublicInt = isPublic === "true" ? 1 : 0;
-        
+
         // Check if the note exists
         const [links] = await db.query("SELECT * FROM links WHERE id = ?", [id]);
 
@@ -521,7 +520,6 @@ app.post('/add-question', async (req, res) => {
         const { QuizId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption } = req.body;
 
         if (!QuizId || !QuestionText || !Option1 || !Option2 || !Option3 || !Option4 || CorrectOption === undefined) {
-            // console.log("❌ All fields are required!");
             return res.status(400).json({ error: "All fields are required!" });
         }
 
@@ -531,7 +529,7 @@ app.post('/add-question', async (req, res) => {
         const [result] = await db.execute(sql, [Number(QuizId), QuestionText, Option1, Option2, Option3, Option4, Number(CorrectOption)]);
 
         if (!result || !result.insertId) {
-            console.log("❌ Failed to insert question into database.");
+            console.log("Failed to insert question into database.");
             return res.status(500).json({ error: "Failed to insert question into database." });
         }
         res.status(201).json({
@@ -541,12 +539,10 @@ app.post('/add-question', async (req, res) => {
 
 
     } catch (err) {
-        console.error("❌ Database error:", err);
+        console.error("Database error:", err);
         res.status(500).json({ error: err.message || "Database error" });
     }
 });
-
-
 
 
 app.get("/get-question-count/:quizId", async (req, res) => {
@@ -721,7 +717,7 @@ app.post("/api/admin-notes/add", upload.single("file"), async (req, res) => {
         console.log("Uploaded File:", req.file);
 
         const { title, content, admin_id, isPublic } = req.body;
-        const file_path = req.file ? `/uploads/${req.file.filename}` : null; 
+        const file_path = req.file ? `/uploads/${req.file.filename}` : null;
 
         // Convert `isPublic` properly to an integer (1 or 0)
         const isPublicInt = parseInt(isPublic, 10);
@@ -785,6 +781,304 @@ app.get("/api/admin-notes/public", async (req, res) => {
     }
 });
 
+//--------------------- Increment view count for a other Admin note Server code------------------------
+
+app.post("/api/admin-notes/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // Check if the note exists
+        const [notes] = await db.query("SELECT * FROM Admin_notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Update view count directly
+        const [result] = await db.execute(
+            "UPDATE Admin_notes SET view_count = view_count + 1 WHERE id = ?",
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update view count" });
+        }
+
+        // Fetch the updated view count
+        const [[updatedNote]] = await db.query("SELECT view_count FROM Admin_notes WHERE id = ?", [id]);
+
+        res.json({
+            message: "View count updated successfully",
+            view_count: updatedNote.view_count
+        });
+    } catch (error) {
+        console.error("Error updating view count:", error);
+        res.status(500).json({ error: "Failed to update view count" });
+    }
+});
+
+//------------------ Increment download Admin count for a note---------------------------
+
+app.post("/api/admin-notes/:id/download", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // First check if the note exists and is active
+        const [notes] = await db.query("SELECT * FROM Admin_notes WHERE id = ? AND IsActive = 1", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        // Get current download count or default to 0 if null
+        const currentDownloadCount = notes[0].download_count || 0;
+        const newDownloadCount = currentDownloadCount + 1;
+
+        // Update the download count
+        const [result] = await db.execute(
+            "UPDATE Admin_notes SET download_count = ? WHERE id = ?",
+            [newDownloadCount, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update download count" });
+        }
+
+        res.json({ message: "Download count updated successfully", download_count: newDownloadCount });
+    } catch (error) {
+        console.error("Error updating download count:", error);
+        res.status(500).json({ error: "Failed to update download count" });
+    }
+});
+
+//------------------------- Delete Admin Notes -----------------------------
+
+app.delete("/api/admin-notes/delete/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        const [result] = await db.execute("Update Admin_notes Set IsActive = 0 WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        res.json({ message: "Admin Note deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        res.status(500).json({ error: "Failed to delete note" });
+    }
+});
+
+//-------------------------------- API to Admin Update Note -------------------------------------
+
+app.post("/api/admin-notes/update-note", upload.single("file"), async (req, res) => {
+    const { id, title, content, isPublic } = req.body;
+    const file_path = req.file ? req.file.filename : null;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        // 🔥 More robust conversion
+        const isPublicInt = (isPublic === "true" || isPublic === true || isPublic === "1" || isPublic === 1) ? 1 : 0;
+
+        // Check if the note exists
+        const [notes] = await db.query("SELECT * FROM Admin_notes WHERE id = ?", [id]);
+
+        if (notes.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        let query = "UPDATE Admin_notes SET title=?, content=?, isPublic=? WHERE id=?";
+        let values = [title, content, isPublicInt, id];
+
+        if (file_path) {
+            query = "UPDATE Admin_notes SET title=?, content=?, isPublic=?, file_path=? WHERE id=?";
+            values = [title, content, isPublicInt, file_path, id];
+        }
+
+        const [result] = await db.execute(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update note" });
+        }
+
+        res.json({ message: "Admin Note updated successfully!" });
+    } catch (error) {
+        console.error("Error updating note:", error);
+        res.status(500).json({ error: "Database update failed" });
+    }
+});
+
+// ---------------------------- Add a new links ----------------------------
+
+app.post("/api/admin-links/addLink", async (req, res) => {
+    try {
+        console.log("Received Request to Add Link");
+
+        // Log the incoming data
+        console.log("Request Body:", req.body);
+
+        const { linktitle, linkcontent, admin_id, url, isPublic } = req.body;
+
+        // Convert `isPublic` to an integer (1 or 0)
+        const isPublicInt = isPublic === "1" ? 1 : 0;
+
+        // Validate required fields
+        if (!linktitle || !linkcontent || !admin_id || !url) {
+            console.log("Validation Error: Missing Fields");
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        // Insert into the database
+        const [result] = await db.execute(
+            "INSERT INTO Admin_links (linktitle, linkcontent, admin_id, url, isPublic) VALUES (?, ?, ?, ?, ?)",
+            [linktitle, linkcontent, admin_id, url, isPublicInt]
+        );
+
+        console.log("Link Inserted Successfully:", result);
+
+        res.status(201).json({
+            linkId: result.insertId,
+            linktitle,
+            linkcontent,
+            admin_id,
+            url,
+            isPublic: isPublicInt,
+        });
+    } catch (error) {
+        console.error("Error adding link:", error);
+        res.status(500).json({ error: "Internal Server Error", details: error.message });
+    }
+});
+
+//------------------Fetch links --------------------------
+
+app.get("/api/admin-links", async (req, res) => {
+    const { user_id } = req.query;
+    if (!user_id) return res.status(400).json({ error: "User ID is required" });
+
+    try {
+        const [links] = await db.query(
+            "SELECT * FROM Admin_links WHERE admin_id = ? AND IsActive = 1 ORDER BY created_at DESC",
+            [user_id]
+        );
+        res.json(links);
+    } catch (error) {
+        console.error("Error fetching links:", error);
+        res.status(500).json({ error: "Failed to fetch links" });
+    }
+});
+
+app.get("/api/admin-links/public", async (req, res) => {
+    try {
+        const [publicLinks] = await db.query(
+            "SELECT * FROM Admin_links WHERE isPublic = 1 AND isActive = 1 ORDER BY created_at DESC"
+        );
+        res.json(publicLinks);
+    } catch (error) {
+        console.error("Error fetching public links:", error);
+        res.status(500).json({ error: "Failed to fetch public links" });
+    }
+});
+
+//--------------------- Increment link view count for a Admin note Server code------------------------
+
+app.post("/api/admin-links/:id/view", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Link ID is required" });
+
+    try {
+        // First check if the note exists and is active
+        const [links] = await db.query("SELECT * FROM Admin_links WHERE id = ? AND IsActive = 1", [id]);
+
+        if (links.length === 0) {
+            return res.status(404).json({ error: "Link not found" });
+        }
+
+        // Get current view count or default to 0 if null
+        const currentViewCount = links[0].view_count || 0;
+        const newViewCount = currentViewCount + 1;
+
+        // Update the view count
+        const [result] = await db.execute(
+            "UPDATE Admin_links SET view_count = ? WHERE id = ?",
+            [newViewCount, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update view count" });
+        }
+
+        res.json({ message: "View count updated successfully", view_count: newViewCount });
+    } catch (error) {
+        console.error("Error updating view count:", error);
+        res.status(500).json({ error: "Failed to update view count" });
+    }
+});
+
+//------------------------- Delete Admin Link -----------------------------
+
+app.delete("/api/admin-links/delete/:id", async (req, res) => {
+    const { id } = req.params;
+
+    if (!id) return res.status(400).json({ error: "Note ID is required" });
+
+    try {
+        const [result] = await db.execute("Update Admin_links Set IsActive = 0 WHERE id = ?", [id]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "Link not found" });
+        }
+
+        res.json({ message: "Link deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting note:", error);
+        res.status(500).json({ error: "Failed to delete link" });
+    }
+});
+
+//-------------------------------- API to Update Link -------------------------------------
+
+app.post("/api/admin-links/update-link", async (req, res) => {
+    const { id, url, linktitle, linkcontent, isPublic } = req.body;
+
+    if (!id) return res.status(400).json({ error: "Link ID is required" });
+
+    try {
+        // Convert isPublic from "true"/"false" string to integer (1 or 0)
+        const isPublicInt = isPublic === "true" ? 1 : 0;
+
+        // Check if the note exists
+        const [links] = await db.query("SELECT * FROM Admin_links WHERE id = ?", [id]);
+
+        if (links.length === 0) {
+            return res.status(404).json({ error: "Note not found" });
+        }
+
+        let query = "UPDATE Admin_links SET url=?, linktitle=?, linkcontent=?, isPublic=? WHERE id=?";
+        let values = [url, linktitle, linkcontent, isPublicInt, id];
+
+
+        const [result] = await db.execute(query, values);
+
+        if (result.affectedRows === 0) {
+            return res.status(500).json({ error: "Failed to update link" });
+        }
+
+        res.json({ message: "Link updated successfully!" });
+    } catch (error) {
+        console.error("Error updating link:", error);
+        res.status(500).json({ error: "Database update failed" });
+    }
+});
 
 // Fetch quiz questions
 app.get('/quiz/:quizId', async (req, res) => {

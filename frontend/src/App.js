@@ -75,7 +75,7 @@ function App() {
                 <AdminQuizList />
               </SignedIn>
             } />
-            <Route path="/admin-files" element={
+            <Route path="/admin-explore" element={
               <SignedIn>
                 <AdminFile />
               </SignedIn>

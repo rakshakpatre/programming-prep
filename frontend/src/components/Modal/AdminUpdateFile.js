@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
+function AdminUpdateFile({ noteData, modalRefEdit, fetchNotes }) {
     const [file, setFile] = useState(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -28,7 +28,7 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
         if (file) formData.append("file", file);
 
         try {
-            const res = await fetch("http://localhost:5000/api/notes/update-note", {
+            const res = await fetch("http://localhost:5000/api/admin-notes/update-note", {
                 method: "POST",
                 body: formData,
             });
@@ -42,6 +42,8 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
             // ✅ Use responseData instead of 'data'
             if (responseData && responseData.message) {
                 alert(responseData.message);
+                fetchNotes();
+                // ✅ Reset input fields after success
                 setTitle("");
                 setContent("");
                 setIsPublic(true);
@@ -63,11 +65,12 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
                         document.body.style.paddingRight = "";
                     }, 300); // Slight delay ensures Bootstrap animation completes
                 }
+
                 // ✅ Remove the modal backdrop (fix lingering dark overlay)
                 document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
-                OntriggerReload(responseData.FormData); // Trigger reload in parent component
             }
 
+            fetchNotes();
         } catch (error) {
             console.error("Error updating file:", error);
         } finally {
@@ -132,7 +135,7 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
                     <div className="modal-footer">
                         <button type="button" className="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
                         <button type="button" className="btn btn-primary px-4" onClick={updateFile} disabled={loading}>
-                            <UploadIcon /> {loading ? " Updating..." : "Update"}
+                            <UploadIcon /> {loading ? " Updating..." : "Submit"}
                         </button>
                     </div>
                 </div>
@@ -141,4 +144,4 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
     );
 }
 
-export default UpdateFile;
+export default AdminUpdateFile

@@ -1,24 +1,26 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import AddFileModal from "../Modal/AddFile";
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import FileViewerModal from '../../components/FileViewerModal'
-import UpdateFile from "../Modal/UpdateFile";
+import AdminUpdateFile from "../Modal/AdminUpdateFile";
 import { Button } from "react-bootstrap";
 
 
 const AdminDisplayFile = () => {
     const { user } = useUser();
+    const location = useLocation();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedNote, setSelectedNote] = useState(null);
     const modalRef = useRef(null);
     const modalRefEdit = useRef(null);
+    const navigate = useNavigate();
     const [visibleLinks, setVisibleLinks] = useState(3);
 
     const fetchNotes = useCallback(async () => {
@@ -33,7 +35,7 @@ const AdminDisplayFile = () => {
             setLoading(false);
         }
     }, [user.id]);
-    
+
 
     // Load notes when user logs in
     useEffect(() => {
@@ -214,11 +216,10 @@ const AdminDisplayFile = () => {
     return (
         <>
             <AddFileModal fetchNotes={fetchNotes} />
-            <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
-            <div className="container">
+            <AdminUpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
+            {location.pathname === "/admin-dashboard" ? (
+                <div className="container">
                 <div className="row">
-
-                    {loading ? <p>Loading notes...</p> : (
                         <>
                             <h2 className="purple fw-bold text-center">Admin Notes</h2>
                             {notes.length > 0 ? (
@@ -255,8 +256,8 @@ const AdminDisplayFile = () => {
                                                             </p>
                                                         )}
                                                         <p className="card-text mb-1 d-flex justify-content-between">
-                                                            <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
-                                                            <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                            <small className="text-muted">{(note.view_count || 0)} Views</small>
+                                                            <small className="text-muted">{(note.download_count || 0)} Downloads</small>
                                                         </p>
                                                     </div>
                                                 </div>
@@ -288,24 +289,93 @@ const AdminDisplayFile = () => {
                                 <p>No notes found</p>
                             )}
                         </>
-                    )}
 
-                    {/* View More / View Less Buttons */}
+
                     {notes.length > 3 && (
                         <div className="text-end mt-3">
-                            {visibleLinks < notes.length ? (
-                                <Button variant="primary" onClick={() => setVisibleLinks(notes.length)}>
-                                    <KeyboardArrowDownIcon />View More
-                                </Button>
-                            ) : (
-                                <Button variant="secondary" onClick={() => setVisibleLinks(3)}>
-                                    <KeyboardArrowUpIcon /> View Less
-                                </Button>
-                            )}
+                            <Button variant="primary" onClick={() => navigate("/admin-explore?type=notes")}>
+                                <ArrowRightIcon /> Explore All
+                            </Button>
                         </div>
                     )}
                 </div>
             </div>
+            ) : (
+                <div className="container-fluid mt-4">
+                <div className="row">
+                        <>
+                            <h2 className="purple fw-bold text-center">Admin Notes</h2>
+                            {notes.length > 0 ? (
+                                notes.map((note) => (
+                                    <div className="col-sm-6 col-md-4 mb-3" style={{
+                                        maxWidth: '540px'
+                                    }} key={note.id}>
+                                        <div className="border border-primary p-1 card shadow"
+                                            style={{
+                                                maxHeight: '190px'
+                                            }}>
+                                            <div className="row g-0 p-1">
+                                                <div className="col-2 d-flex justify-content-center align-items-center">
+                                                    <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                </div>
+                                                <div className="col-9">
+                                                    <div className="card-body d-flex flex-column h-100" >
+                                                        <h5 className="card-title purple-500">
+                                                            {note.title}
+                                                            {note.isPublic === 1 && (
+                                                                <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                            )}
+                                                            {note.isPublic === 0 && (
+                                                                <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                                            )}
+                                                        </h5>
+                                                        <p className="card-text flex-grow-1">{note.content.length > 50
+                                                            ? `${note.content.substring(0, 50)}...`
+                                                            : note.content}</p>
+                                                        {/* Show creator name if it's not the current user's note */}
+                                                        {note.admin_id !== user.id && note.firstName && note.lastName && (
+                                                            <p className="card-text mb-1">
+                                                                <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
+                                                            </p>
+                                                        )}
+                                                        <p className="card-text mb-1 d-flex justify-content-between">
+                                                            <small className="text-muted">{(note.view_count || 0)} Views</small>
+                                                            <small className="text-muted">{(note.download_count || 0)} Downloads</small>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className='col-1 d-flex align-items-start flex-column'>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleDownloadNote(note)}>
+                                                        <CloudDownloadIcon color="action" />
+                                                    </button>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleViewNote(note)}>
+                                                        <VisibilityIcon color="info" />
+                                                    </button>
+                                                    {/* Only show edit and delete buttons for user's own notes */}
+                                                    {note.admin_id === user.id && (
+                                                        <>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleEditNote(note)}>
+                                                                <EditIcon color="success" />
+                                                            </button>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleDeleteNote(note.id)}>
+                                                                <DeleteIcon color="error" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                ))
+                            ) : (
+                                <p>No notes found</p>
+                            )}
+                        </>
+                </div>
+            </div>
+
+            )}
 
             {/* ✅ File Viewer Modal */}
             <FileViewerModal

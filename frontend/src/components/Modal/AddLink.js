@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import LinkIcon from '@mui/icons-material/Link';
 
-export default function AddLink({ fetchLinks }) {
+export default function AddLink() {
   const { user } = useUser();
   const [linktitle, setTitle] = useState("");
   const [url, setUrl] = useState("");
@@ -17,19 +17,20 @@ export default function AddLink({ fetchLinks }) {
     }
 
     setLoading(true);
+    const links = {
+      linktitle,
+      url,
+      linkcontent,
+      user_id: user.id,
+      isPublic: isPublic ? "1" : "0"
+     };
     try {
       const res = await fetch("http://localhost:5000/api/links/addLink", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",  // Ensure JSON is sent
         },
-        body: JSON.stringify({
-          linktitle,
-          url,
-          linkcontent,
-          user_id: user.id,
-          isPublic: isPublic ? "1" : "0"
-        }),
+        body: JSON.stringify(links), 
       });
 
       if (!res.ok) {
@@ -39,12 +40,13 @@ export default function AddLink({ fetchLinks }) {
       const data = await res.json();
       console.log(data);
       alert("Link added successfully!");
-      // fetchLinks();
+      
 
       setTitle("");
       setUrl("");
       setDescription("");
       setIsPublic(true); // Reset to public
+       // Pass the new link to the parent component
 
       const modalElement = document.getElementById("addLink");
       const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
@@ -57,6 +59,8 @@ export default function AddLink({ fetchLinks }) {
         document.body.classList.remove("modal-open");
       }
 
+      // Reload the page after adding the note
+      window.location.reload();
     } catch (error) {
       console.error("Error adding link:", error);
       //   alert("Error adding link. Try again!");

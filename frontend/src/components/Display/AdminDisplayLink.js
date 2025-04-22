@@ -6,25 +6,24 @@ import EditIcon from '@mui/icons-material/Edit'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import UpdateLink from "../Modal/UpdateLink";
-import AddLink from "../Modal/AddLink";
+import AdminUpdateLink from "../Modal/AdminUpdateLink";
 import { Modal, Button } from "react-bootstrap";
 
-function DisplayLink() {
-  const { user } = useUser();
-  const navigate = useNavigate();
+function AdminDisplayLink() {
   const location = useLocation();
+  const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [links, setLinks] = useState([]);
   const [selectedLink, setSelectedLink] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const modalRef = useRef(null);
   const modalRefEditLink = useRef(null);
+  const navigate = useNavigate();
   const [visibleLinks, setVisibleLinks] = useState(3);
   // Fetch files from all users
   const fetchLinks = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/links?user_id=${user.id}`);
+      const res = await fetch(`http://localhost:5000/api/admin-links?user_id=${user.id}`);
       const data = await res.json();
       setLinks(data);
       setLoading(false);
@@ -39,17 +38,12 @@ function DisplayLink() {
     fetchLinks();
   }, [user]);
 
-  // const handleLinkzAdded = (newLink) => {
-  //   setLinks(prevLinks => [newLink, ...prevLinks]); // Add new quiz at the top
-  //   fetchLinks(); // Refresh the list of links
-  // };
-
   // Function to delete a link
-  const handleDelete = async (linkId) => {
+  const handleAdminDelete = async (linkId) => {
     if (!window.confirm("Are you sure you want to delete this link?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/links/delete/${linkId}`, {
+      const res = await fetch(`http://localhost:5000/api/admin-links/delete/${linkId}`, {
         method: "DELETE",
       });
 
@@ -76,10 +70,10 @@ function DisplayLink() {
 
   //------------------ Increment View count for a Owner note---------------------------
 
-  const handleViewLink = async (link) => {
+  const handleViewAddLink = async (link) => {
     try {
       // Increment view count on the server
-      const response = await fetch(`http://localhost:5000/api/links/${link.id}/view`, {
+      const response = await fetch(`http://localhost:5000/api/admin-links/${link.id}/view`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -133,98 +127,96 @@ function DisplayLink() {
 
   return (
     <>
-      <AddLink fetchLinks={fetchLinks} />
-      <UpdateLink linkData={selectedLink} modalRefEditLink={modalRefEditLink} />
-      {location.pathname === "/user-dashboard" ? (
-        <div className="container mt-3">
-          <div className="row">
-            {loading ? (
-              <p>Loading links...</p>
-            ) : (
-              <>
-                <h2 className="purple fw-bold text-center">My Links</h2>
-                {links.length > 0 ? (
-                  links.slice(0, visibleLinks).map((link) => (
-                    <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                      <div className="border border-primary p-1 card shadow">
-                        <div className="row g-0 p-1">
-                          <div className="col-2 d-flex justify-content-center align-items-center">
-                            <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                          </div>
-                          <div className="col-9">
-                            <div className="card-body d-flex flex-column h-100">
-                              <h5 className="card-title purple-500">
-                                {link.linktitle}
-                                {link.isPublic === 1 && (
-                                  <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                                )}
-                                {link.isPublic === 0 && (
-                                  <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                                )}
-                              </h5>
-                              {/* <h5 className="card-title">{link.linktitle}</h5> */}
-                              <a
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-decoration-none text-primary d-flex align-items-center"
-                              >
-                                {link.url.length > 30
-                                  ? `${link.url.substring(0, 30)}...`
-                                  : link.url}
-                              </a>
-                              <p className="card-text">{link.linkcontent.length > 40 ? `${link.linkcontent.substring(0, 40)}...` : link.linkcontent}</p>
-                              <p className="card-text mb-1 d-flex justify-content-between">
-                                <small className="text-muted">{(link.view_count || 0)} Views</small>
-                                {/* <small className="text-muted">Downloads</small> */}
-                              </p>
+      {/* <AddLink fetchLinks={fetchLinks}/> */}
+      <AdminUpdateLink linkData={selectedLink} modalRefEditLink={modalRefEditLink} />
+      {location.pathname === "/admin-dashboard" ?(
+        <>
+          <div className="container mt-3">
+            <div className="row">
+                <>
+                  <h2 className="purple fw-bold text-center">My Links</h2>
+                  {links.length > 0 ? (
+                    links.slice(0, visibleLinks).map((link) => (
+                      <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
+                        <div className="border border-primary p-1 card shadow">
+                          <div className="row g-0 p-1">
+                            <div className="col-2 d-flex justify-content-center align-items-center">
+                              <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                             </div>
-                          </div>
-                          <div className='col-1 d-flex align-items-start flex-column'>
+                            <div className="col-9">
+                              <div className="card-body d-flex flex-column h-100">
+                                <h5 className="card-title purple-500">
+                                  {link.linktitle}
+                                  {link.isPublic === 1 && (
+                                    <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                  )}
+                                  {link.isPublic === 0 && (
+                                    <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                  )}
+                                </h5>
+                                {/* <h5 className="card-title">{link.linktitle}</h5> */}
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-decoration-none text-primary d-flex align-items-center"
+                                >
+                                  {link.url.length > 30
+                                    ? `${link.url.substring(0, 30)}...`
+                                    : link.url}
+                                </a>
+                                <p className="card-text">{link.linkcontent.length > 40 ? `${link.linkcontent.substring(0, 40)}...` : link.linkcontent}</p>
+                                <p className="card-text mb-1 d-flex justify-content-between">
+                                  <small className="text-muted">{(link.view_count || 0)} Views</small>
+                                  {/* <small className="text-muted">Downloads</small> */}
+                                </p>
+                              </div>
+                            </div>
+                            <div className='col-1 d-flex align-items-start flex-column'>
 
-                            <button
-                              className="btn btn mb-1 border-0"
-                              onClick={() => copyToClipboard(link.url)}
-                            >
-                              <ContentPasteIcon />
-                            </button>
-                            <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
-                              <VisibilityIcon color="info" />
-                            </button>
-                            {/* Only show edit and delete buttons for the user's own files */}
-                            {link.user_id === user.id && (
-                              <>
-                                <button className="btn mb-1 border-0" onClick={() => handleEditLink(link)}>
-                                  <EditIcon color="success" />
-                                </button>
-                                <button className="btn mb-1 border-0" onClick={() => handleDelete(link.id)}>
-                                  <DeleteIcon color="error" />
-                                </button>
-                              </>
-                            )}
+                              <button
+                                className="btn btn mb-1 border-0"
+                                onClick={() => copyToClipboard(link.url)}
+                              >
+                                <ContentPasteIcon />
+                              </button>
+                              <button className="btn mb-1 border-0" onClick={() => handleViewAddLink(link)}>
+                                <VisibilityIcon color="info" />
+                              </button>
+                              {/* Only show edit and delete buttons for the user's own files */}
+                              {link.admin_id === user.id && (
+                                <>
+                                  <button className="btn mb-1 border-0" onClick={() => handleEditLink(link)}>
+                                    <EditIcon color="success" />
+                                  </button>
+                                  <button className="btn mb-1 border-0" onClick={() => handleAdminDelete(link.id)}>
+                                    <DeleteIcon color="error" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <p>No links found</p>
-                )}
-              </>
+                    ))
+                  ) : (
+                    <p>No links found</p>
+                  )}
+                </>
+            </div>
+            {/* View More / View Less Buttons */}
+            {links.length > 3 && (
+              <div className="text-end mt-3">
+                <Button variant="primary" onClick={() => navigate('/admin-explore?type=links')}>
+                  <ArrowRightIcon /> Explore All
+                </Button>
+              </div>
             )}
           </div>
-          {/* View More / View Less Buttons */}
-          {links.length > 3 && (
-            <div className="text-end mt-3">
-              <Button variant="primary" onClick={() => navigate('/user-explore?type=links')}>
-                <ArrowRightIcon /> Explore All
-              </Button>
-            </div>
-          )}
-        </div>
+        </>
       ) : (
-        <div className="container-fluid mt-3">
-          <div className="row">
+      <div className="container-fluid mt-3">
+        <div className="row">
             <>
               <h2 className="purple fw-bold text-center">My Links</h2>
               {links.length > 0 ? (
@@ -246,6 +238,7 @@ function DisplayLink() {
                                 <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                               )}
                             </h5>
+                            {/* <h5 className="card-title">{link.linktitle}</h5> */}
                             <a
                               href={link.url}
                               target="_blank"
@@ -256,9 +249,10 @@ function DisplayLink() {
                                 ? `${link.url.substring(0, 30)}...`
                                 : link.url}
                             </a>
-                            <p className="card-text hello">{link.linkcontent.length > 30 ? `${link.linkcontent.substring(0, 30)}...` : link.linkcontent}</p>
+                            <p className="card-text">{link.linkcontent.length > 40 ? `${link.linkcontent.substring(0, 40)}...` : link.linkcontent}</p>
                             <p className="card-text mb-1 d-flex justify-content-between">
                               <small className="text-muted">{(link.view_count || 0)} Views</small>
+                              {/* <small className="text-muted">Downloads</small> */}
                             </p>
                           </div>
                         </div>
@@ -270,16 +264,16 @@ function DisplayLink() {
                           >
                             <ContentPasteIcon />
                           </button>
-                          <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
+                          <button className="btn mb-1 border-0" onClick={() => handleViewAddLink(link)}>
                             <VisibilityIcon color="info" />
                           </button>
                           {/* Only show edit and delete buttons for the user's own files */}
-                          {link.user_id === user.id && (
+                          {link.admin_id === user.id && (
                             <>
                               <button className="btn mb-1 border-0" onClick={() => handleEditLink(link)}>
                                 <EditIcon color="success" />
                               </button>
-                              <button className="btn mb-1 border-0" onClick={() => handleDelete(link.id)}>
+                              <button className="btn mb-1 border-0" onClick={() => handleAdminDelete(link.id)}>
                                 <DeleteIcon color="error" />
                               </button>
                             </>
@@ -293,9 +287,8 @@ function DisplayLink() {
                 <p>No links found</p>
               )}
             </>
-
-          </div>
         </div>
+      </div>
       )}
 
       {/* Modal for Viewing Content */}
@@ -344,4 +337,4 @@ function DisplayLink() {
 }
 
 
-export default DisplayLink
+export default AdminDisplayLink

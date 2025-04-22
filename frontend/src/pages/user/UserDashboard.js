@@ -24,27 +24,11 @@ const Dashboard = () => {
     }, [isSignedIn, navigate]);
 
     return (
-        <div className="d-flex flex-column min-vh-100 bg-light">
+        <div className="d-flex flex-column">
             <Navbar userid={user?.userid} />
 
             <div className="container mt-4">
                 <div className="text-center">
-                    {/* <button
-                        type="button"
-                        className="btn btn-primary rounded-pill m-2"
-                        style={{ boxShadow: "gray 1px 1px 8px 1px" }}
-                        data-bs-toggle="modal"
-                        data-bs-target="#">
-                        <CodeIcon /> Add Code
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-primary rounded-pill m-2"
-                        style={{ boxShadow: "gray 1px 1px 8px 1px" }}
-                        data-bs-toggle="modal"
-                        data-bs-target="#">
-                        <NotesIcon /> Add Notes
-                    </button> */}
                     <button
                         type="button"
                         className="btn btn-primary rounded-pill m-2"
@@ -65,9 +49,8 @@ const Dashboard = () => {
                 </div>
                 <AddFileModal />
                 <AddLink />
-                {/* <ThemeButton /> */}
             </div>
-            <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-5">   
+            <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-2">   
                 <div className="row">
                     <DisplayFile />
                     <DisplayLink />

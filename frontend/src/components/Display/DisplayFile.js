@@ -1,48 +1,49 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
-import AddFileModal from "../Modal/AddFile";
+import { useNavigate, useLocation } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import FileViewerModal from '../../components/FileViewerModal'
 import UpdateFile from "../Modal/UpdateFile";
+import AddFile from "../Modal/AddFile";
+
 import { Button } from "react-bootstrap";
 
 
 const DisplayFile = () => {
     const { user } = useUser();
+    const location = useLocation();
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedNote, setSelectedNote] = useState(null);
-    // const [publicNotes, setPublicNotes] = useState([]);
+    const navigate = useNavigate();
     const modalRef = useRef(null);
     const modalRefEdit = useRef(null);
     const [visibleLinks, setVisibleLinks] = useState(3);
 
-    const fetchNotes = useCallback(async () => {
+    const fetchNotes = async () => {
+        if (!user?.id) return;
+        setLoading(true);
         try {
             const res = await fetch(`http://localhost:5000/api/notes?user_id=${user.id}`);
             if (!res.ok) throw new Error("Failed to fetch notes");
             const data = await res.json();
-            setNotes(data);
+            setNotes(data || []);
         } catch (error) {
             console.error("Error fetching notes:", error);
         } finally {
             setLoading(false);
         }
-    }, [user.id]);
-
-    // Load notes when user logs in
+    };
+    
     useEffect(() => {
         if (user?.id) {
             fetchNotes();
         }
-    }, [user]);
-
-
+    }, [user?.id]);
 
     const handleEditNote = (note) => {
         setSelectedNote(note);
@@ -213,16 +214,100 @@ const DisplayFile = () => {
 
     return (
         <>
-            <AddFileModal fetchNotes={fetchNotes} />
-            <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
-            <div className="container">
-                <div className="row">
+            {/* <AddFile onTriggerReload={triggerReload} /> */}
 
-                    {loading ? <p>Loading notes...</p> : (
+            <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
+            {location.pathname === "/user-dashboard" ? (
+                <div className="container">
+                    <div className="row">
+                        {loading ? (
+                            <p>Loading notes...</p>) : (
+                            <>
+                                <h2 className="purple fw-bold text-center">My Notes</h2>
+                                {notes.length > 0 ? (
+                                    notes.slice(0, visibleLinks).map((note) => (
+                                        <div className="col-sm-6 col-md-4 mb-3" style={{
+                                            maxWidth: '540px'
+                                        }} key={note.id}>
+                                            <div className="border border-primary p-1 card shadow"
+                                                style={{
+                                                    maxHeight: '190px'
+                                                }}>
+                                                <div className="row g-0 p-1">
+                                                    <div className="col-2 d-flex justify-content-center align-items-center">
+                                                        <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                    </div>
+                                                    <div className="col-9">
+                                                        <div className="card-body d-flex flex-column h-100" >
+                                                            <h5 className="card-title purple-500">
+                                                                {note.title}
+                                                                {note.isPublic === 1 && (
+                                                                    <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                                )}
+                                                                {note.isPublic === 0 && (
+                                                                    <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                                                )}
+                                                            </h5>
+                                                            <p className="card-text flex-grow-1">{note.content.length > 50
+                                                                ? `${note.content.substring(0, 50)}...`
+                                                                : note.content}</p>
+
+                                                            <p className="card-text mb-1 d-flex justify-content-between">
+                                                                <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
+                                                                <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                            </p>
+                                                            {/* <p className="card-text mb-1">
+                                                                <small className="text-black">Shared by: {user?.fullName || ""}</small>
+                                                            </p> */}
+                                                        </div>
+                                                    </div>
+                                                    <div className='col-1 d-flex align-items-start flex-column'>
+                                                        <button className="btn mb-1 border-0" onClick={() => handleDownloadNote(note)}>
+                                                            <CloudDownloadIcon color="action" />
+                                                        </button>
+                                                        <button className="btn mb-1 border-0" onClick={() => handleViewNote(note)}>
+                                                            <VisibilityIcon color="info" />
+                                                        </button>
+                                                        {/* Only show edit and delete buttons for user's own notes */}
+                                                        {note.user_id === user.id && (
+                                                            <>
+                                                                <button className="btn mb-1 border-0" onClick={() => handleEditNote(note)}>
+                                                                    <EditIcon color="success" />
+                                                                </button>
+                                                                <button className="btn mb-1 border-0" onClick={() => handleDeleteNote(note.id)}>
+                                                                    <DeleteIcon color="error" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    ))
+                                ) : (
+                                    <p>No notes found</p>
+                                )}
+                            </>
+                        )}
+
+                        {/* View More / View Less Buttons */}
+                        {notes.length > 3 && (
+                            <div className="text-end mt-3">
+                                <Button variant="primary" onClick={() => navigate("/user-explore?type=notes")}>
+                                    <ArrowRightIcon /> Explore All
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-1">
+                    <div className="row">
                         <>
                             <h2 className="purple fw-bold text-center">My Notes</h2>
                             {notes.length > 0 ? (
-                                notes.slice(0, visibleLinks).map((note) => (
+                                notes.map((note) => (
                                     <div className="col-sm-6 col-md-4 mb-3" style={{
                                         maxWidth: '540px'
                                     }} key={note.id}>
@@ -282,30 +367,14 @@ const DisplayFile = () => {
                                             </div>
                                         </div>
                                     </div>
-
                                 ))
                             ) : (
                                 <p>No notes found</p>
                             )}
                         </>
-                    )}
-
-                    {/* View More / View Less Buttons */}
-                    {notes.length > 3 && (
-                        <div className="text-end mt-3">
-                            {visibleLinks < notes.length ? (
-                                <Button variant="primary" onClick={() => setVisibleLinks(notes.length)}>
-                                    <KeyboardArrowDownIcon />View More
-                                </Button>
-                            ) : (
-                                <Button variant="secondary" onClick={() => setVisibleLinks(3)}>
-                                    <KeyboardArrowUpIcon /> View Less
-                                </Button>
-                            )}
-                        </div>
-                    )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* ✅ File Viewer Modal */}
             <FileViewerModal

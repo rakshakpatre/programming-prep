@@ -31,7 +31,7 @@ export default function Navbar() {
                                             <Link className={`nav-link ${location.pathname === "/admin-quiz" || location.pathname === "/admin-quiz-list" ? "active" : ""}`} to="/admin-quiz">Quiz</Link>
                                         </li>
                                         <li className="nav-item">
-                                            <Link className={`nav-link ${location.pathname === "/admin-files" ? "active" : ""}`} to="/admin-files">Files</Link>
+                                            <Link className={`nav-link ${location.pathname === "/admin-explore" ? "active" : ""}`} to="/admin-explore">Explore</Link>
                                         </li>
                                     </ul>
                                 ) : (

@@ -2,15 +2,13 @@ import React, { useState } from 'react'
 import { useUser } from "@clerk/clerk-react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-export default function AddFile({ fetchNotes }) {
-
-
+export default function AddFile() {
   const { user } = useUser();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isPublic, setIsPublic] = useState(true); // Default to public
+  const [isPublic, setIsPublic] = useState(true);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
 
   const addFile = async () => {
@@ -24,12 +22,13 @@ export default function AddFile({ fetchNotes }) {
     formData.append("title", title);
     formData.append("content", content);
     formData.append("user_id", user.id);
-    formData.append("isPublic", isPublic ? "1" : "0"); // Force correct values
-
+    formData.append("isPublic", isPublic ? "1" : "0");
 
     if (file) {
       formData.append("file", file);
     }
+
+
 
     try {
       const res = await fetch("http://localhost:5000/api/notes/add", {
@@ -42,43 +41,41 @@ export default function AddFile({ fetchNotes }) {
       }
 
       const data = await res.json();
-      console.log(data);
-      alert("Note added successfully!");
+      if (data && data.note) {
+        alert(data.message);
 
-      setTitle("");
-      setContent("");
-      setFile(null);
-      setIsPublic(true); // Reset to public
-      setFileInputKey(Date.now());
+        // Reset the form
+        setTitle("");
+        setContent("");
+        setFile(null);
+        setIsPublic(true);
+        setFileInputKey(Date.now());
+        // Reload the page after adding the note
+        window.location.reload();
 
-      const modalElement = document.getElementById("addFile");
-      const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
-      if (modalInstance) {
-        modalInstance.hide();
-
-        // Wait a bit for Bootstrap's animation to complete, then clean up
-        setTimeout(() => {
-          // ✅ Remove all modal backdrops
-          document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
-
-          // ✅ Restore scrolling
-          document.body.classList.remove("modal-open");
-          document.body.style.overflow = "auto";
-          document.body.style.paddingRight = "";
-        }, 300); // Slight delay ensures Bootstrap animation completes
+        // Hide modal
+        const modalElement = document.getElementById("addFile");
+        const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+        if (modalInstance) {
+          modalInstance.hide();
+          setTimeout(() => {
+            document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+            document.body.classList.remove("modal-open");
+            document.body.style.overflow = "auto";
+            document.body.style.paddingRight = "";
+          }, 300);
+        }
+        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
       }
-
-      // ✅ Remove the modal backdrop (fix lingering dark overlay)
-      document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
-
-      fetchNotes();
-
+      else {
+        alert("Note added but received unexpected response format");
+      }
     } catch (error) {
       console.error("Error adding note:", error);
-      // alert("Error adding note. Try again!");
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
