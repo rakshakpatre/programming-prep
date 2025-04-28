@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import AddFileModal from "../Modal/AddFile";
+import AdminAddFile from "../Modal/AdminAddFile";
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -36,15 +36,16 @@ const AdminDisplayFile = () => {
         }
     }, [user.id]);
 
-
-    // Load notes when user logs in
     useEffect(() => {
         if (user?.id) {
             fetchNotes();
         }
     }, [user]);
 
-
+    const triggerReload = (Newnote) => {
+        setNotes((prevAdminNotes) => [...prevAdminNotes, Newnote]);
+        fetchNotes();
+    }
 
     const handleEditNote = (note) => {
         setSelectedNote(note);
@@ -215,19 +216,19 @@ const AdminDisplayFile = () => {
 
     return (
         <>
-            <AddFileModal fetchNotes={fetchNotes} />
-            <AdminUpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} />
+            <AdminAddFile fetchNotes={triggerReload} />
+            <AdminUpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} triggerReload={triggerReload} />
             {location.pathname === "/admin-dashboard" ? (
                 <div className="container">
                 <div className="row">
                         <>
-                            <h2 className="purple fw-bold text-center">Admin Notes</h2>
-                            {notes.length > 0 ? (
+                            {(
                                 notes.slice(0, visibleLinks).map((note) => (
                                     <div className="col-sm-6 col-md-4 mb-3" style={{
                                         maxWidth: '540px'
                                     }} key={note.id}>
-                                        <div className="border border-primary p-1 card shadow"
+                                        <h2 className="fst-italic purple-700 fw-bold mt-3 mb-3">Admin Notes</h2>
+                                        <div className=" p-1 card shadow"
                                             style={{
                                                 maxHeight: '190px'
                                             }}>
@@ -237,12 +238,12 @@ const AdminDisplayFile = () => {
                                                 </div>
                                                 <div className="col-9">
                                                     <div className="card-body d-flex flex-column h-100" >
-                                                        <h5 className="card-title purple-500">
+                                                        <h5 className="card-title fst-italic purple-700">
                                                             {note.title}
-                                                            {note.isPublic === 1 && (
+                                                            {note.isPublic === true && (
                                                                 <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                             )}
-                                                            {note.isPublic === 0 && (
+                                                            {note.isPublic === false && (
                                                                 <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                                                             )}
                                                         </h5>
@@ -285,15 +286,13 @@ const AdminDisplayFile = () => {
                                     </div>
 
                                 ))
-                            ) : (
-                                <p>No notes found</p>
                             )}
                         </>
 
 
                     {notes.length > 3 && (
                         <div className="text-end mt-3">
-                            <Button variant="primary" onClick={() => navigate("/admin-explore?type=notes")}>
+                            <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/admin-explore?type=notes")}>
                                 <ArrowRightIcon /> Explore All
                             </Button>
                         </div>
@@ -304,7 +303,7 @@ const AdminDisplayFile = () => {
                 <div className="container-fluid mt-4">
                 <div className="row">
                         <>
-                            <h2 className="purple fw-bold text-center">Admin Notes</h2>
+                            <h2 className="fst-italic purple-700 fw-bold mt-3">Admin Notes</h2>
                             {notes.length > 0 ? (
                                 notes.map((note) => (
                                     <div className="col-sm-6 col-md-4 mb-3" style={{
@@ -320,12 +319,12 @@ const AdminDisplayFile = () => {
                                                 </div>
                                                 <div className="col-9">
                                                     <div className="card-body d-flex flex-column h-100" >
-                                                        <h5 className="card-title purple-500">
+                                                        <h5 className="card-title fst-italic purple-700">
                                                             {note.title}
-                                                            {note.isPublic === 1 && (
+                                                            {note.isPublic === true && (
                                                                 <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                             )}
-                                                            {note.isPublic === 0 && (
+                                                            {note.isPublic === false && (
                                                                 <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                                                             )}
                                                         </h5>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-function AdminUpdateFile({ noteData, modalRefEdit, fetchNotes }) {
+function AdminUpdateFile({ noteData, modalRefEdit, triggerReload }) {
     const [file, setFile] = useState(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -42,8 +42,6 @@ function AdminUpdateFile({ noteData, modalRefEdit, fetchNotes }) {
             // ✅ Use responseData instead of 'data'
             if (responseData && responseData.message) {
                 alert(responseData.message);
-                fetchNotes();
-                // ✅ Reset input fields after success
                 setTitle("");
                 setContent("");
                 setIsPublic(true);
@@ -68,9 +66,10 @@ function AdminUpdateFile({ noteData, modalRefEdit, fetchNotes }) {
 
                 // ✅ Remove the modal backdrop (fix lingering dark overlay)
                 document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+                triggerReload(responseData.formData); 
             }
 
-            fetchNotes();
+            // fetchNotes();
         } catch (error) {
             console.error("Error updating file:", error);
         } finally {

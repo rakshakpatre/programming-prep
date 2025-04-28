@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-function AdminUpdateLink({ linkData, modalRefEditLink}) {
+function AdminUpdateLink({ linkData, modalRefEditLink,triggerReload}) {
     const [url, setUrl] = useState(null);
     const [linktitle, setLinkTitle] = useState("");
     const [linkcontent, setLinkContent] = useState("");
@@ -69,7 +69,7 @@ function AdminUpdateLink({ linkData, modalRefEditLink}) {
                 }, 100);
             }
 
-            // fetchNotes();
+            triggerReload(); // Call the triggerReload function to refresh the data
         } catch (error) {
             console.error("Error updating file:", error);
         } finally {

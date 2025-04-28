@@ -38,28 +38,7 @@ function DisplayPublic() {
         }
     }, [user]);
 
-    // const fetchPublicNotes = async () => {
-    //     try {
-    //         const res = await fetch(`http://localhost:5000/api/notes/public`);
-    //         const data = await res.json();
-
-    //         // Filter out the user's own notes
-    //         const otherUsersPublicNotes = data.filter(note => note.userId !== user?.id);
-
-    //         setPublicNotes(otherUsersPublicNotes);
-    //     } catch (error) {
-    //         console.error("Error fetching public notes:", error);
-    //     }
-    // };
-
-    // // Load notes when user logs in
-    // useEffect(() => {
-    //     if (user?.id) {
-    //         fetchPublicNotes();
-    //     }
-    // }, [user]);
-
-
+    
     //------------------ Increment View count for a Public note---------------------------
 
     const handleViewNoteUser = async (note) => {
@@ -194,22 +173,22 @@ function DisplayPublic() {
         <>
             {location.pathname === "/user-dashboard" ? (
                 <div className="container mt-3">
-                <h3 className="text-center mb-3 purple fw-bold">Public Notes & Links from Other Users</h3>
                 <div className="row">
-                    {publicNotes.length > 0 ? (
+                    {(
                         publicNotes
-                            .filter(note => note.user_id !== user.id && note.isPublic === 1) // Only other users' public notes
-                            .slice(0, visibleLinks)
-                            .map(note => (
-                                <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                    <div className="border border-primary p-1 card shadow" style={{ height: '170px' }}>
+                        .filter(note => note.user_id !== user.id && note.isPublic === true) // Only other users' public notes
+                        .slice(0, visibleLinks)
+                        .map(note => (
+                            <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
+                                    <h3 className="mb-3 fst-italic purple-700 fw-bold">Public Notes & Links</h3>
+                                    <div className="p-1 card shadow" style={{ height: '170px' }}>
                                         <div className="row g-0 p-1">
                                             <div className="col-2 d-flex justify-content-center align-items-center">
                                                 <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
                                             </div>
                                             <div className="col-9">
                                                 <div className="card-body d-flex flex-column h-100">
-                                                    <h5 className="card-title purple-500">
+                                                    <h5 className="card-title fst-italic purple-700">
                                                         {note.title}
                                                         <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                     </h5>
@@ -241,8 +220,6 @@ function DisplayPublic() {
                                     </div>
                                 </div>
                             ))
-                    ) : (
-                        <p>No notes found</p>
                     )}
         
                     <DisplayPublicLink />
@@ -250,8 +227,8 @@ function DisplayPublic() {
         
                 {publicNotes.length > 3 && (
                     <div className="text-end mt-3">
-                        <Button variant="primary" onClick={() => navigate("/user-explore?type=userpublicnotes")}>
-                            <ArrowRightIcon /> Explore All
+                        <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-explore?type=userpublicnotes")}>
+                            Explore All <ArrowRightIcon />
                         </Button>
                     </div>
                 )}
@@ -259,25 +236,25 @@ function DisplayPublic() {
             ) : (
                 <div className="container-fluid mt-3">
                     <div className="text-start">
-                        <button className="btn btn-primary" onClick={() => navigate("/user-dashboard")}>
+                        <button className="btn btn-primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-dashboard")}>
                             <ArrowBackIcon /> Back to Dashboard
                         </button>
                     </div>
-                    <h3 className="text-center mb-3 purple fw-bold">Public Notes & Links from Other Users</h3>
+                    <h3 className="mb-3 fw-bold fst-italic purple-700 mt-5">Public Notes & Links </h3>
                     <div className="row">
                         {publicNotes.length > 0 ? (
                             publicNotes
                             .filter(note => note.user_id !== user.id && note.isPublic === 1)
                                 .map(note => (
                                     <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                        <div className="border border-primary p-1 card shadow" style={{ height: '170px' }}>
+                                        <div className=" p-1 card shadow" style={{ height: '170px' }}>
                                             <div className="row g-0 p-1">
                                                 <div className="col-2 d-flex justify-content-center align-items-center">
                                                     <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
                                                 </div>
                                                 <div className="col-9">
                                                     <div className="card-body d-flex flex-column h-100">
-                                                        <h5 className="card-title purple-500">
+                                                        <h5 className="card-title fst-italic purple-700">
                                                             {note.title}
                                                             {note.isPublic === 1 && (
                                                                 <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>

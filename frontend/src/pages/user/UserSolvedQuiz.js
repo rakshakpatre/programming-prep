@@ -1,150 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import Navbar from "../../components/Navbar";
+import QuizResultPDF from "../../components/QuizResultPDF";
 import axios from "axios";
 import HappyIcon from '../../assets/img/success.gif';
 import SadIcon from '../../assets/img/sad.gif';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadingIcon from '@mui/icons-material/Downloading';
-
-const styles = StyleSheet.create({
-    page: {
-        padding: 20,
-        backgroundColor: "#f5f5f5",
-    },
-    section: {
-        marginBottom: 10,
-        padding: 10,
-        borderWidth: 1,
-        borderColor: "#432874",
-        borderRadius: 5,
-        backgroundColor: "#ffffff",
-    },
-    titleBox: {
-        backgroundColor: "#432874",
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 10,
-    },
-    titleText: {
-        fontSize: 16,
-        color: "#ffffff",
-        textAlign: "center",
-        fontWeight: "bold",
-    },
-    subtitle: {
-        fontSize: 12,
-        fontWeight: "bold",
-        marginBottom: 5,
-        color: "#333",
-    },
-    text: {
-        fontSize: 12,
-        color: "#555",
-        fontWeight: "bold",
-    },
-    correct: {
-        color: "green",
-        fontWeight: "bold",
-    },
-    wrong: {
-        color: "red",
-        fontWeight: "bold",
-    },
-    table: {
-        display: "table",
-        width: "100%",
-        marginTop: 10,
-        borderWidth: 1,
-        borderColor: "#432874",
-    },
-    tableRow: {
-        flexDirection: "row",
-        borderBottomWidth: 1,
-        borderBottomColor: "#432874",
-    },
-    tableHeader: {
-        backgroundColor: "#432874",
-        color: "white",
-        fontWeight: "bold",
-        padding: 5,
-        fontSize: 10,
-    },
-    tableCell: {
-        padding: 5,
-        fontSize: 12,
-        borderRightWidth: 1,
-        borderRightColor: "#432874",
-    },
-    questionCell: {
-        flex: 3,
-    },
-    smallCell: {
-        flex: 1,
-    }
-});
-
-const QuizReportPDF = ({ quizData, quizResult, questions, user }) => (
-    <Document>
-        <Page style={styles.page}>
-            {/* Quiz Title Section */}
-            <View style={styles.titleBox}>
-                <Text style={styles.titleText}>{quizData.QuizName}</Text>
-            </View>
-            {/* User Information Section */}
-            <View style={styles.section}>
-                <Text style={styles.subtitle}>User Information:</Text>
-                <Text style={styles.text}>Name: {user?.fullName}</Text>
-                <Text style={styles.text}>Email: {user?.primaryEmailAddress?.emailAddress}</Text>
-                <Text style={styles.text}>User ID: {user?.id}</Text>
-            </View>
-
-
-            <View style={styles.section}>
-                <Text style={styles.subtitle}>Description:</Text>
-                <Text style={styles.text}>{quizData.QuizDescription}</Text>
-                <Text style={styles.subtitle}>Total Questions:</Text>
-                <Text style={styles.text}>{quizData.NumberOfQue}</Text>
-            </View>
-
-            {/* Quiz Result Section */}
-            <View style={styles.section}>
-                <Text style={styles.subtitle}>Quiz Result:</Text>
-                <Text style={[styles.text, quizResult.Status === "Pass" ? styles.correct : styles.wrong]}>
-                    {quizResult.Status} - {quizResult.Percentage}%
-                </Text>
-                <Text style={styles.text}>Marks: {quizResult.ObtainedMarks}/{quizResult.TotalMarks}</Text>
-            </View>
-
-            {/* Quiz Questions & Answers Table */}
-            <View style={styles.section}>
-                <Text style={styles.subtitle}>Quiz Responses</Text>
-                <View style={styles.table}>
-                    {/* Table Header */}
-                    <View style={[styles.tableRow, { backgroundColor: "#432874" }]}>
-                        <Text style={[styles.tableCell, styles.smallCell, styles.tableHeader]}>#</Text>
-                        <Text style={[styles.tableCell, styles.questionCell, styles.tableHeader]}>Question</Text>
-                        <Text style={[styles.tableCell, styles.smallCell, styles.tableHeader]}>Your Answer</Text>
-                        <Text style={[styles.tableCell, styles.smallCell, styles.tableHeader]}>Correct Answer</Text>
-                    </View>
-                    {/* Table Rows */}
-                    {questions.map((q, index) => (
-                        <View key={index} style={styles.tableRow}>
-                            <Text style={[styles.tableCell, styles.smallCell]}>{index + 1}</Text>
-                            <Text style={[styles.tableCell, styles.questionCell]}>{q.QuestionText}</Text>
-                            <Text style={[styles.tableCell, styles.smallCell, q.IsCorrect ? styles.correct : styles.wrong]}>
-                                {q[`Option${q.SelectedOption}`]} {q.IsCorrect ? "✔️" : "❌"}
-                            </Text>
-                            <Text style={[styles.tableCell, styles.smallCell, styles.correct]}>{q[`Option${q.CorrectOption}`]}</Text>
-                        </View>
-                    ))}
-                </View>
-            </View>
-        </Page>
-    </Document>
-);
 
 export default function UserSolvedQuiz() {
     const { user } = useUser();
@@ -157,34 +21,61 @@ export default function UserSolvedQuiz() {
     const [questions, setQuestions] = useState([]);
 
     useEffect(() => {
-        // Fetch Quiz Details
-        axios.get(`http://localhost:5000/api/quiz/${quizId}`)
-            .then(res => setQuizData(res.data))
-            .catch(err => console.error(err));
+        const fetchQuizDetails = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/api/quiz/${quizId}`);
+                if (!response.ok) throw new Error("Quiz not found");
+                const data = await response.json();
+                setQuizData(data);
+            } catch (err) {
+                console.error("Quiz fetch error:", err);
+            }
+        };
+    
+        const fetchQuizResult = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/api/quiz/result/${quizId}/${user?.id}`);
+                if (!response.ok) throw new Error("Quiz result not found");
+                const data = await response.json();
+                setQuizResult(data);
+            } catch (err) {
+                console.error("Result fetch error:", err);
+            }
+        };
+    
+        const fetchQuestions = async () => {
+            try {
+                const response = await fetch(`http://localhost:5000/api/quiz/questions/${quizId}/${user?.id}`);
+                if (!response.ok) throw new Error("Questions not found");
+                const data = await response.json();
+                setQuestions(data);
+            } catch (err) {
+                console.error("Questions fetch error:", err);
+            }
+        };
 
-        // Fetch Quiz Results
-        axios.get(`http://localhost:5000/api/quiz/result/${quizId}/${user?.id}`)
-            .then(res => setQuizResult(res.data))
-            .catch(err => console.error(err));
-
-        // Fetch User Answers & Questions
-        axios.get(`http://localhost:5000/api/quiz/questions/${quizId}/${user?.id}`)
-            .then(res => setQuestions(res.data))
-            .catch(err => console.error(err));
+        if (quizId && user) {
+            fetchQuizDetails();
+            fetchQuizResult();
+            fetchQuestions();
+        }
+    
     }, [quizId, user]);
     return (
         <>
             <Navbar />
             <div className="container mt-4">
                 <div className="d-flex justify-content-between">
-                    <button className="btn btn-primary shadow-lg rounded-3" onClick={() => navigate("/user-quiz")}>
+                    <button className="btn btn-primary rounded-pill mb-1"
+                        style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-quiz")}>
                         <ArrowBackIcon /> Back to Quiz
                     </button>
                     {quizData && quizResult && questions.length > 0 && (
-                        <PDFDownloadLink document={<QuizReportPDF quizData={quizData} quizResult={quizResult} questions={questions} user={user} />} fileName="quiz_report.pdf">
+                        <PDFDownloadLink document={<QuizResultPDF quizData={quizData} quizResult={quizResult} questions={questions} user={user} />} fileName="Quiz Result.pdf">
                             {({ loading }) => (
-                                <button className="btn btn-primary shadow-lg rounded-3">
-                                    <DownloadingIcon /> {loading ? "Generating Quiz PDF..." : "Download Quiz PDF"}
+                                <button className="btn btn-primary rounded-pill mb-1"
+                                    style={{ boxShadow: "gray 1px 1px 8px 1px" }}>
+                                    <DownloadingIcon /> {loading ? "Generating Quiz Result..." : "Download Quiz Result"}
                                 </button>
                             )}
                         </PDFDownloadLink>
@@ -194,7 +85,7 @@ export default function UserSolvedQuiz() {
                     <div className="col-md-7">
                         {/* Quiz Information */}
                         {quizData && (
-                            <div className="my-4 p-3 d-flex justify-content-between flex-column rounded shadow" style={{ minHeight: "170px" }}>
+                            <div className="my-3 p-3 d-flex justify-content-between flex-column rounded shadow" style={{ minHeight: "170px" }}>
                                 <div>
                                     <h3 className="purple-700 fst-italic">{quizData.QuizName}</h3>
                                     <p>{quizData.QuizDescription}</p>
@@ -206,7 +97,7 @@ export default function UserSolvedQuiz() {
                     <div className="col-md-5">
                         {/* Quiz Result */}
                         {quizResult && (
-                            <div className={`row rounded shadow my-4 p-3 rounded-3 shadow ${quizResult.Status === "Pass" ? "purple-700" : "text-danger"}`} style={{ minHeight: "170px" }}>
+                            <div className={`row rounded shadow my-3 p-3 rounded-3 shadow ${quizResult.Status === "Pass" ? "purple-700" : "text-danger"}`} style={{ minHeight: "170px" }}>
                                 <div className="col-12 col-md-3 d-flex justify-content-center align-items-center">
                                     {quizResult.Status === "Pass" ? (
                                         <img src={HappyIcon} alt="" className='w-100' />

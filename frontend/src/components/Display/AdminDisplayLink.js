@@ -38,6 +38,10 @@ function AdminDisplayLink() {
     fetchLinks();
   }, [user]);
 
+  const triggerReload = () => {
+    fetchLinks();
+  };
+
   // Function to delete a link
   const handleAdminDelete = async (linkId) => {
     if (!window.confirm("Are you sure you want to delete this link?")) return;
@@ -128,29 +132,29 @@ function AdminDisplayLink() {
   return (
     <>
       {/* <AddLink fetchLinks={fetchLinks}/> */}
-      <AdminUpdateLink linkData={selectedLink} modalRefEditLink={modalRefEditLink} />
+      <AdminUpdateLink linkData={selectedLink} modalRefEditLink={modalRefEditLink} triggerReload={triggerReload}/>
       {location.pathname === "/admin-dashboard" ?(
         <>
           <div className="container mt-3">
             <div className="row">
                 <>
-                  <h2 className="purple fw-bold text-center">My Links</h2>
-                  {links.length > 0 ? (
+                  {(
                     links.slice(0, visibleLinks).map((link) => (
                       <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                        <div className="border border-primary p-1 card shadow">
+                        <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
+                        <div className="p-1 card shadow">
                           <div className="row g-0 p-1">
                             <div className="col-2 d-flex justify-content-center align-items-center">
                               <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                             </div>
                             <div className="col-9">
                               <div className="card-body d-flex flex-column h-100">
-                                <h5 className="card-title purple-500">
+                                <h5 className="card-title fst-italic purple-700">
                                   {link.linktitle}
-                                  {link.isPublic === 1 && (
+                                  {link.isPublic === true && (
                                     <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                   )}
-                                  {link.isPublic === 0 && (
+                                  {link.isPublic === false && (
                                     <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                                   )}
                                 </h5>
@@ -199,15 +203,13 @@ function AdminDisplayLink() {
                         </div>
                       </div>
                     ))
-                  ) : (
-                    <p>No links found</p>
                   )}
                 </>
             </div>
             {/* View More / View Less Buttons */}
             {links.length > 3 && (
               <div className="text-end mt-3">
-                <Button variant="primary" onClick={() => navigate('/admin-explore?type=links')}>
+                <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate('/admin-explore?type=links')}>
                   <ArrowRightIcon /> Explore All
                 </Button>
               </div>
@@ -218,7 +220,7 @@ function AdminDisplayLink() {
       <div className="container-fluid mt-3">
         <div className="row">
             <>
-              <h2 className="purple fw-bold text-center">My Links</h2>
+              <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
               {links.length > 0 ? (
                 links.map((link) => (
                   <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
@@ -229,16 +231,15 @@ function AdminDisplayLink() {
                         </div>
                         <div className="col-9">
                           <div className="card-body d-flex flex-column h-100">
-                            <h5 className="card-title purple-500">
+                            <h5 className="card-title fst-italic purple-700">
                               {link.linktitle}
-                              {link.isPublic === 1 && (
+                              {link.isPublic === true && (
                                 <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                               )}
-                              {link.isPublic === 0 && (
+                              {link.isPublic === false && (
                                 <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                               )}
                             </h5>
-                            {/* <h5 className="card-title">{link.linktitle}</h5> */}
                             <a
                               href={link.url}
                               target="_blank"

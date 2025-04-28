@@ -61,7 +61,8 @@ export default function AdminAddFile({ fetchNotes }) {
         }
         document.body.classList.remove("modal-open");
       }
-
+      
+      window.location.reload();
       fetchNotes();
     } catch (error) {
       console.error("Error adding note:", error);

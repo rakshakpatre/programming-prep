@@ -9,11 +9,12 @@ import UpdateQuiz from '../../components/Modal/UpdateQuiz';
 import UpdateQuestion from '../../components/Modal/UpdateQuizQuestion';
 import AddIcon from "@mui/icons-material/Add";
 import AddQuizQuestionModal from "../../components/Modal/AddQuizQuestions";
+import QuizAnalysisPDF from '../../components/QuizAnalysisPDF';
 
 export default function AdminQuizList() {
     const location = useLocation();
     const navigate = useNavigate();
-    const id = location.state?.id;  // Getting quiz ID from route state
+    const id = location.state?.id;
     const [questions, setQuestions] = useState([]);
     const [quiz, setQuiz] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function AdminQuizList() {
 
     useEffect(() => {
         fetchQuestions();
-    }, [id]);
+    }, []);
 
     const fetchQuestions = () => {
         if (!id) return; // Prevent API call if ID is not available
@@ -124,7 +125,7 @@ export default function AdminQuizList() {
                 if (data.success) {
                     alert("Question deleted successfully!");
                 } else {
-                    alert("Error deleting quiz!");
+                    alert("Error deleting Question!");
                 }
                 fetchQuestions();
                 fetchQuizzes();
@@ -143,10 +144,12 @@ export default function AdminQuizList() {
         <>
             <Navbar />
             <div className="container mt-4">
-                <div className="text-start">
-                    <button className="btn btn-primary" onClick={() => navigate("/admin-quiz")}>
+                <div className="d-flex justify-content-between">
+                    <button className="btn btn-primary rounded-pill mb-1"
+                        style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/admin-quiz")}>
                         <ArrowBackIcon /> Back to Quiz
                     </button>
+                    <QuizAnalysisPDF quizId={id} />
                 </div>
                 {quiz.map((quiz) => (
                     <React.Fragment key={quiz.QuizId}>

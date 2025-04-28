@@ -2,6 +2,7 @@ import React from "react";
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 
@@ -95,10 +96,18 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         // backgroundColor: "#f2f0fa",
     },
+
+    section: {
+        marginBottom: 10,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: "#432874",
+        borderRadius: 5
+    },
 });
 
 
-const MyPDFDocument = ({ data }) => {
+const MyPDFDocument = ({user, data }) => {
     let mostViewed = null;
     let mostDownloaded = null;
 
@@ -130,6 +139,13 @@ const MyPDFDocument = ({ data }) => {
                 {/* Title */}
                 <View style={styles.titleBox}>
                     <Text style={styles.titleText}>User Notes Report</Text>
+                </View>
+
+                <View style={styles.section}>
+                    <Text style={styles.subtitle}>User Information:</Text>
+                    <Text style={styles.text}>Name: {user?.fullName}</Text>
+                    <Text style={styles.text}>Email: {user?.primaryEmailAddress?.emailAddress}</Text>
+                    <Text style={styles.text}>User ID: {user?.id}</Text>
                 </View>
 
                 {/* Table */}
@@ -185,11 +201,11 @@ const MyPDFDocument = ({ data }) => {
 
 // PDF Download Button
 const UserNotesDownloadPDF = ({ data }) => {
-    console.log("PDF data: ", data);
+    const { user } = useUser();
     const navigate = useNavigate();
 
     if (!Array.isArray(data) || data.length === 0) {
-        return <div>Loading PDF data...</div>; 
+        return <div>Loading PDF data...</div>;
     }
 
     return (
@@ -197,17 +213,17 @@ const UserNotesDownloadPDF = ({ data }) => {
             <div className="container-fluid mt-4">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <div className="text-start">
-                        <button className="btn btn-primary" onClick={() => navigate("/user-dashboard")}>
+                        <button className="btn btn-primary rounded-pill" style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-dashboard")}>
                             <ArrowBackIcon /> Back to Dashboard
                         </button>
                     </div>
                     <PDFDownloadLink
-                        document={<MyPDFDocument data={data} />}
+                        document={<MyPDFDocument user={user} data={data} />}
                         fileName="user_report.pdf"
                     >
 
                         {({ loading }) => (
-                            <button className="btn btn-primary shadow-lg rounded-3 text-end">
+                            <button className="btn btn-primary rounded-pill text-end" style={{ boxShadow: "gray 1px 1px 8px 1px" }}>
                                 <DownloadingIcon /> {loading ? "Generating PDF..." : "Download User Report"}
                             </button>
                         )}

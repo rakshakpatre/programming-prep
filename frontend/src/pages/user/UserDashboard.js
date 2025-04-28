@@ -50,7 +50,7 @@ const Dashboard = () => {
                 <AddFileModal />
                 <AddLink />
             </div>
-            <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-2">   
+            <div className="container-fluid p-3 mb-5 bg-body rounded mt-2">   
                 <div className="row">
                     <DisplayFile />
                     <DisplayLink />

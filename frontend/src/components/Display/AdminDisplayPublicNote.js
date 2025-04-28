@@ -163,7 +163,7 @@ function AdminDisplayPublicNote() {
         <>
         {location.pathname === "/user-dashboard" ? (
             <div className="container mt-3">
-            <h3 className="text-center mb-3 purple fw-bold">Admin Notes & Links</h3>
+            <h3 className="fst-italic purple-700 fw-bold mt-3">Admin Notes & Links</h3>
             <div className="row">
                 {publicNotes.length > 0 ? (
                     publicNotes
@@ -171,19 +171,19 @@ function AdminDisplayPublicNote() {
                         .slice(0, visibleLinks)
                         .map(note => (
                             <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                <div className="border border-primary p-1 card shadow" style={{ height: '170px' }}>
+                                <div className="p-1 card shadow" style={{ height: '170px' }}>
                                     <div className="row g-0 p-1">
                                         <div className="col-2 d-flex justify-content-center align-items-center">
                                             <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
                                         </div>
                                         <div className="col-9">
                                             <div className="card-body d-flex flex-column h-100">
-                                                <h5 className="card-title purple-500">
+                                                <h5 className="card-title fst-italic purple-700">
                                                     {note.title}
-                                                    {note.isPublic === 1 && (
+                                                    {note.isPublic === true && (
                                                         <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                     )}
-                                                    {note.isPublic === 0 && (
+                                                    {note.isPublic === false && (
                                                         <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                                                     )}
                                                 </h5>
@@ -221,8 +221,8 @@ function AdminDisplayPublicNote() {
 
             {publicNotes.length > 3 && (
                 <div className="text-end mt-3">
-                    <Button variant="primary" onClick={() => navigate("/user-explore?type=publicnotes")}>
-                        <ArrowRightIcon /> Explore All
+                    <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-explore?type=publicnotes")}>
+                        Explore All <ArrowRightIcon />
                     </Button>
                 </div>
             )}
@@ -230,29 +230,29 @@ function AdminDisplayPublicNote() {
         ) : (
             <div className="container-fliud mt-3">
                 <div className="text-start">
-                    <button className="btn btn-primary" onClick={() => navigate("/user-dashboard")}>
+                    <button className="btn btn-primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-dashboard")}>
                         <ArrowBackIcon /> Back to Dashboard
                     </button>
                 </div>
-                <h3 className="text-center mb-3 purple fw-bold">Admin Notes & Links</h3>
+                <h3 className=" mb-3 fw-bold fst-italic purple-700 mt-5">Admin Notes & Links</h3>
                 <div className="row">
                     {publicNotes.length > 0 ? (
                         publicNotes
                             .map(note => (
                                 <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                    <div className="border border-primary p-1 card shadow" style={{ height: '170px' }}>
+                                    <div className=" p-1 card shadow" style={{ height: '170px' }}>
                                         <div className="row g-0 p-1">
                                             <div className="col-2 d-flex justify-content-center align-items-center">
                                                 <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
                                             </div>
                                             <div className="col-9">
                                                 <div className="card-body d-flex flex-column h-100">
-                                                    <h5 className="card-title purple-500">
+                                                    <h5 className="card-title fst-italic purple-700">
                                                         {note.title}
-                                                        {note.isPublic === 1 && (
+                                                        {note.isPublic === true && (
                                                             <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                                                         )}
-                                                        {note.isPublic === 0 && (
+                                                        {note.isPublic === false && (
                                                             <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                                                         )}
                                                     </h5>

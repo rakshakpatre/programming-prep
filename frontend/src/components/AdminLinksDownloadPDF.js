@@ -178,7 +178,7 @@ const AdminLinksDownloadPDF = ({ data }) => {
     <div className="container-fluid mt-4">
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="text-start">
-          <button className="btn btn-primary" onClick={() => navigate("/user-dashboard")}>
+          <button className="btn btn-primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-dashboard")}>
             <ArrowBackIcon /> Back to Dashboard
           </button>
         </div>
@@ -188,7 +188,7 @@ const AdminLinksDownloadPDF = ({ data }) => {
 
         >
           {({ loading }) => (
-            <button className="btn btn-primary shadow-lg rounded-3">
+            <button className="btn btn-primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}}>
               <DownloadingIcon /> {loading ? "Generating PDF..." : "Download Admin Report"}
             </button>
           )}

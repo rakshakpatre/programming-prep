@@ -24,7 +24,6 @@ function DisplayPublicLink() {
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
         const data = await response.json();
 
         // Remove duplicate links based on their ID
@@ -104,19 +103,19 @@ function DisplayPublicLink() {
     <>
       {location.pathname === "/user-dashboard" ? (
         <>
-        {links.length > 0 ? (
+        {(
           links
-            .filter(link => link.user_id !== user.id && link.isPublic === 1)
+            .filter(link => link.user_id !== user.id && link.isPublic === true)
             .slice(0, visibleLinks).map((link) => (
               <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                <div className="border border-primary p-1 card shadow">
+                <div className=" p-1 card shadow">
                   <div className="row g-0 p-1">
                     <div className="col-2 d-flex justify-content-center align-items-center">
                       <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                     </div>
                     <div className="col-9">
                       <div className="card-body d-flex flex-column h-100">
-                        <h5 className="card-title purple-500">
+                        <h5 className="card-title fst-italic purple-700">
                           {link.linktitle}
                           {link.isPublic === 1 && (
                             <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
@@ -156,9 +155,7 @@ function DisplayPublicLink() {
                 </div>
               </div>
             ))
-        ) : (
-          <p>No links found</p>
-        )
+        ) 
       }
       </>
       ) : (
@@ -169,14 +166,14 @@ function DisplayPublicLink() {
               .filter(link => link.user_id !== user.id && link.isPublic === 1)
               .map((link) => (
                 <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                  <div className="border border-primary p-1 card shadow">
+                  <div className=" p-1 card shadow">
                     <div className="row g-0 p-1">
                       <div className="col-2 d-flex justify-content-center align-items-center">
                         <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                       </div>
                       <div className="col-9">
                         <div className="card-body d-flex flex-column h-100">
-                          <h5 className="card-title purple-500">
+                          <h5 className="card-title fst-italic purple-700">
                             {link.linktitle}
                             {link.isPublic === 1 && (
                               <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>

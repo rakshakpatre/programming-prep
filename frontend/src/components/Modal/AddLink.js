@@ -61,6 +61,7 @@ export default function AddLink() {
 
       // Reload the page after adding the note
       window.location.reload();
+      // triggerReload(data.links); 
     } catch (error) {
       console.error("Error adding link:", error);
       //   alert("Error adding link. Try again!");

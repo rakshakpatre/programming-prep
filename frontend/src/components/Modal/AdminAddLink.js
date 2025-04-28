@@ -55,8 +55,8 @@ export default function AdminAddLink({ fetchLinks }) {
         }
         document.body.classList.remove("modal-open");
       }
-
-      fetchLinks && fetchLinks(); // Refresh list if passed as prop
+      window.location.reload(); // Reload the page to reflect changes
+      fetchLinks(); // Fetch the updated list of links
     } catch (error) {
       console.error("Error adding link:", error);
     } finally {

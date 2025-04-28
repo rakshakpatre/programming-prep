@@ -46,7 +46,7 @@ function AdminDashboard() {
         <AdminAddLink />
         {/* <ThemeButton /> */}
       </div>
-      <div className="container-fluid shadow p-3 mb-5 bg-body rounded mt-2">
+      <div className="container-fluid p-3 mb-5 bg-body rounded mt-2">
         <div className="row">
          <AdminDisplayFile/>
          <AdminDisplayLink/>

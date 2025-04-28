@@ -100,19 +100,19 @@ function AdminDisplayPublicLink() {
           {links.length > 0 ? (
             links.slice(0, visibleLinks).map((link) => (
               <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                <div className="border border-primary p-1 card shadow">
+                <div className=" p-1 card shadow">
                   <div className="row g-0 p-1">
                     <div className="col-2 d-flex justify-content-center align-items-center">
                     <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                     </div>
                     <div className="col-9">
                       <div className="card-body d-flex flex-column h-100">
-                        <h5 className="card-title purple-500">
+                        <h5 className="card-title fst-italic purple-700">
                           {link.linktitle}
-                          {link.isPublic === 1 && (
+                          {link.isPublic === true && (
                             <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
                           )}
-                          {link.isPublic === 0 && (
+                          {link.isPublic === false && (
                             <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
                           )}
                         </h5>

@@ -36,7 +36,7 @@ export default function UserQuizExam() {
 
     const submitQuiz = () => {
         const formattedAnswers = Object.keys(answers).map(qid => ({
-            questionId: parseInt(qid),
+            questionId: qid,
             selectedOption: answers[qid]
         }));
 
@@ -75,12 +75,13 @@ export default function UserQuizExam() {
             <Navbar />
             <div className="container mt-4">
                 <div className="text-start">
-                    <button className="btn btn-primary" onClick={() => navigate("/user-quiz")}>
+                    <button className="btn btn-primary rounded-pill mb-1"
+                        style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-quiz")}>
                         <ArrowBackIcon /> Back to Quiz
                     </button>
                 </div>
             </div>
-            <div className="container mt-4 shadow p-3 rounded-3">
+            <div className="container mt-3 mb-5 shadow p-3 rounded-3">
                 {quiz.map((quiz) => (
                     <React.Fragment key={quiz.QuizId}>
                         <div className="">

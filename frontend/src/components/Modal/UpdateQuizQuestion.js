@@ -14,31 +14,31 @@ export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions })
 
     useEffect(() => {
         if (!updateQuestionId) return;
-
+    
         fetch(`http://localhost:5000/get-question-by-id/${updateQuestionId}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to fetch questions');
+                    throw new Error('Failed to fetch question');
                 }
                 return response.json();
             })
             .then(data => {
-                if (data.length > 0) {
-                    setQuestionData(prevData => ({
-                        ...prevData,
-                        QuestionText: data[0].QuestionText,
-                        Option1: data[0].Option1,
-                        Option2: data[0].Option2,
-                        Option3: data[0].Option3,
-                        Option4: data[0].Option4,
-                        CorrectOption: data[0].CorrectOption
-                    }));
+                if (data) {
+                    setQuestionData({
+                        QuestionText: data.QuestionText,
+                        Option1: data.Option1,
+                        Option2: data.Option2,
+                        Option3: data.Option3,
+                        Option4: data.Option4,
+                        CorrectOption: data.CorrectOption
+                    });
                 }
             })
             .catch(error => {
-                console.error(error.message);
+                console.error("Error fetching question:", error.message);
             });
     }, [updateQuestionId]);
+    
 
 
     const handleChange = (e) => {
@@ -64,26 +64,26 @@ export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions })
                 alert("Question updated successfully!");
                 console.log("Success:", data);
                 fetchQuestions();
-                // ✅ Hide modal properly
-                const modalElement = document.getElementById("updateQuizQuestion");
-                const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
+               // ✅ Close Modal
+               const modalElement = document.getElementById("updateQuizQuestion");
+               const modalInstance = window.bootstrap.Modal.getInstance(modalElement);
+               if (modalInstance) {
+                   modalInstance.hide();
 
-                    // Wait a bit for Bootstrap's animation to complete, then clean up
-                    setTimeout(() => {
-                        // ✅ Remove all modal backdrops
-                        document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+                   // Wait a bit for Bootstrap's animation to complete, then clean up
+                   setTimeout(() => {
+                       // ✅ Remove all modal backdrops
+                       document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
 
-                        // ✅ Restore scrolling
-                        document.body.classList.remove("modal-open");
-                        document.body.style.overflow = "auto";
-                        document.body.style.paddingRight = "";
-                    }, 300); // Slight delay ensures Bootstrap animation completes
-                }
+                       // ✅ Restore scrolling
+                       document.body.classList.remove("modal-open");
+                       document.body.style.overflow = "auto";
+                       document.body.style.paddingRight = "";
+                   }, 300); // Slight delay ensures Bootstrap animation completes
+               }
 
-                // ✅ Remove the modal backdrop (fix lingering dark overlay)
-                document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
+               // ✅ Remove the modal backdrop (fix lingering dark overlay)
+               document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
 
 
             } else {

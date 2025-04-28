@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-function UpdateLink({ linkData, modalRefEditLink}) {
+function UpdateLink({ linkData, modalRefEditLink, triggerReload}) {
     const [url, setUrl] = useState(null);
     const [linktitle, setLinkTitle] = useState("");
     const [linkcontent, setLinkContent] = useState("");
@@ -13,7 +13,7 @@ function UpdateLink({ linkData, modalRefEditLink}) {
             setUrl(linkData.url || "");
             setLinkTitle(linkData.linktitle || "");
             setLinkContent(linkData.linkcontent || "");
-            setIsPublic(linkData.isPublic);
+            setIsPublic(linkData.isPublic === 1 || linkData.isPublic === true);
         }
     }, [linkData]);
 
@@ -51,6 +51,7 @@ function UpdateLink({ linkData, modalRefEditLink}) {
                 setLinkTitle("");
                 setLinkContent("");
                 setIsPublic(true);
+                triggerReload();
 
                 // ✅ Close Modal Properly
                 const modalElement = document.getElementById("updateLink");

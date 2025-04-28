@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadIcon from '@mui/icons-material/CloudUpload';
 
-function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
+function UpdateFile({ noteData, modalRefEdit, triggerReload }) {
     const [file, setFile] = useState(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -13,7 +13,7 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
             setFile(null);
             setTitle(noteData.title || "");
             setContent(noteData.content || "");
-            setIsPublic(noteData.isPublic);
+            setIsPublic(noteData.isPublic === 1 || noteData.isPublic === true);
         }
     }, [noteData]);
 
@@ -24,7 +24,7 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
         formData.append("id", noteData.id);
         formData.append("title", title);
         formData.append("content", content);
-        formData.append("isPublic", isPublic);
+        formData.append("isPublic", isPublic ? "1" : "0");
         if (file) formData.append("file", file);
 
         try {
@@ -65,7 +65,7 @@ function UpdateFile({ noteData, modalRefEdit, OntriggerReload }) {
                 }
                 // ✅ Remove the modal backdrop (fix lingering dark overlay)
                 document.querySelectorAll(".modal-backdrop").forEach(backdrop => backdrop.remove());
-                OntriggerReload(responseData.FormData); // Trigger reload in parent component
+                triggerReload(responseData.formData); 
             }
 
         } catch (error) {
