@@ -5,7 +5,8 @@ import path from "path";
 import db1 from "./config/Firebase.js";
 import { Clerk } from '@clerk/clerk-sdk-node';
 import admin from 'firebase-admin';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 const clerk = Clerk({ secretKey: process.env.REACT_APP_CLERK_PUBLISHABLE_KEY });
 app.use(cors());
@@ -560,7 +561,6 @@ app.post('/add-question', async (req, res) => {
         const { QuizId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption } = req.body;
 
         if (!QuizId || !QuestionText || !Option1 || !Option2 || !Option3 || !Option4 || CorrectOption === undefined) {
-            console.log(QuizId, QuestionText, Option1, Option2, Option3, Option4, CorrectOption);
             return res.status(400).json({ error: "All fields are required!" });
         }
 
@@ -1475,7 +1475,6 @@ app.get('/api/solved-quiz-report/:userId', async (req, res) => {
 
         for (const doc of resultsSnapshot.docs) {
             const resultData = doc.data();
-            console.log(resultData);
             const quizId = resultData.QuizId;
 
             const quizDoc = await db1.collection("Quiz").doc(quizId).get();
@@ -1660,7 +1659,7 @@ app.post('/clerk/webhook', express.json(), async (req, res) => {
 
 //-------------------------- Start Server----------------------------
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
