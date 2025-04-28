@@ -103,7 +103,7 @@ function DisplayPublicLink() {
     <>
       {location.pathname === "/user-dashboard" ? (
         <>
-        {(
+        {links.length > 0 ? (
           links
             .filter(link => link.user_id !== user.id && link.isPublic === true)
             .slice(0, visibleLinks).map((link) => (
@@ -155,7 +155,9 @@ function DisplayPublicLink() {
                 </div>
               </div>
             ))
-        ) 
+        ) : (
+          <p>No links found</p>
+        )
       }
       </>
       ) : (

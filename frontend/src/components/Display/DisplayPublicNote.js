@@ -174,7 +174,7 @@ function DisplayPublic() {
             {location.pathname === "/user-dashboard" ? (
                 <div className="container mt-3">
                 <div className="row">
-                    {(
+                    {publicNotes.length > 0 ? (
                         publicNotes
                         .filter(note => note.user_id !== user.id && note.isPublic === true) // Only other users' public notes
                         .slice(0, visibleLinks)
@@ -220,6 +220,8 @@ function DisplayPublic() {
                                     </div>
                                 </div>
                             ))
+                    ) : (
+                        <p>No notes found</p>
                     )}
         
                     <DisplayPublicLink />

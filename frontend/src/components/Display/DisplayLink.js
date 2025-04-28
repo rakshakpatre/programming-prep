@@ -134,9 +134,11 @@ function DisplayLink() {
       {location.pathname === "/user-dashboard" ? (
         <div className="container mt-3">
           <div className="row">
-            {(
+            {loading ? (
+              <p>Loading links...</p>
+            ) : (
               <>
-                {(
+                {links.length > 0 ? (
                   links.slice(0, visibleLinks).map((link) => (
                     <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
                       <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
@@ -201,6 +203,8 @@ function DisplayLink() {
                       </div>
                     </div>
                   ))
+                ) : (
+                  <p>No links found</p>
                 )}
               </>
             )}
