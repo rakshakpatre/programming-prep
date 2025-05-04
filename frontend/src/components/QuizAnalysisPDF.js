@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { pdf, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import DownloadingIcon from '@mui/icons-material/Downloading';
 import LoadingIcon from '@mui/icons-material/Cached';
 import { saveAs } from 'file-saver';
 import { useLocation } from "react-router-dom";
 
-export default function QuizAnalysisPDF({ quizId }) {
+export default function QuizAnalysisPDF({ quizId, isPublished }) {
     const [loading, setLoading] = useState(false);
     const location = useLocation();
 
@@ -18,6 +18,8 @@ export default function QuizAnalysisPDF({ quizId }) {
 
             const quiz = data.quiz;
             const results = data.results;
+
+
 
             const getAnalysis = () => {
                 const passCount = results.filter(u => u.percentage >= 35).length;
@@ -112,18 +114,20 @@ export default function QuizAnalysisPDF({ quizId }) {
     return (
         <>
             {
-                location.pathname === "/admin-quiz-list" ?
-                    (
-                        <button onClick={fetchAndDownload} className="btn btn-primary rounded-pill mb-1"
-                            style={{ boxShadow: "gray 1px 1px 8px 1px" }} disabled={loading}>
-                            <DownloadingIcon /> {loading ? 'Generating PDF...' : 'Download Quiz Analysis'}
-                        </button>
-                    ) : (
-                        <button className="btn btn-primary rounded-pill mx-1 btn-sm"
-                            style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={fetchAndDownload} disabled={loading}>
-                            {loading ? <LoadingIcon color="" /> : <DownloadingIcon />}
-                        </button>
-                    )
+                isPublished ? (
+                    location.pathname === "/admin-quiz-list" ?
+                        (
+                            <button onClick={fetchAndDownload} className="btn btn-primary rounded-pill mb-1"
+                                style={{ boxShadow: "gray 1px 1px 8px 1px" }} disabled={loading}>
+                                <DownloadingIcon /> {loading ? 'Generating PDF...' : 'Download Quiz Analysis'}
+                            </button>
+                        ) : (
+                            <button className="btn btn-primary rounded-pill mx-1 btn-sm"
+                                style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={fetchAndDownload} disabled={loading}>
+                                {loading ? <LoadingIcon color="" /> : <DownloadingIcon />}
+                            </button>
+                        )
+                ) : ("")
             }
         </>
     );

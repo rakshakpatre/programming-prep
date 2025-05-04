@@ -462,7 +462,7 @@ app.post("/api/links/update-link", async (req, res) => {
 
     try {
         // Convert isPublic from "true"/"false" string to boolean (true or false)
-        const isPublicBool = isPublic === "1" || isPublic === "true";   
+        const isPublicBool = isPublic === "1" || isPublic === "true";
 
         // Check if the link exists
         const linkRef = db1.collection('links').doc(id);
@@ -506,6 +506,7 @@ app.post("/addQuiz", async (req, res) => {
             QuizName: title,
             QuizDescription: description,
             NumberOfQue: parseInt(noOfQue),
+            isPublished: false,
             IsActive: true,
             createdAt: new Date(),
         });
@@ -731,6 +732,61 @@ app.put('/soft-delete-question/:id', async (req, res) => {
     }
 });
 
+app.put('/soft-delete-quiz/:id', async (req, res) => {
+    const quizId = req.params.id;
+
+    try {
+        // Step 1: Soft delete the quiz
+        const quizRef = db1.collection('Quiz').doc(quizId);
+        const quizDoc = await quizRef.get();
+
+        if (!quizDoc.exists) {
+            return res.status(404).json({ success: false, message: 'Quiz not found' });
+        }
+
+        await quizRef.update({ IsActive: false });
+
+        // Step 2: Soft delete all questions with the same QuizId
+        const questionsSnapshot = await db1
+            .collection('QuizQuestions')
+            .where('QuizId', '==', quizId)
+            .get();
+
+        const batch = db1.batch();
+
+        questionsSnapshot.forEach(doc => {
+            batch.update(doc.ref, { IsActive: false });
+        });
+
+        await batch.commit();
+
+        res.json({ success: true, message: 'Quiz deleted successfully' });
+    } catch (error) {
+        console.error('Error soft deleting quiz:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+});
+
+app.put('/publish-quiz/:quizId', async (req, res) => {
+    const { quizId } = req.params;
+    const { endDate } = req.body;
+
+    try {
+        const quizRef = db1.collection('Quiz').doc(quizId);
+
+        await quizRef.update({
+            EndDate: admin.firestore.Timestamp.fromDate(new Date(endDate)),
+            StartDate: new Date(),
+            isPublished: true
+        });
+
+        res.json({ success: true, message: "Quiz published successfully" });
+    } catch (error) {
+        console.error("Error publishing quiz:", error);
+        res.status(500).json({ success: false, message: "Error publishing quiz" });
+    }
+});
+
 app.put('/updateQuiz', async (req, res) => {
     const { id, quizName, description, noOfQue } = req.body;
 
@@ -874,7 +930,7 @@ app.get("/api/admin-notes", async (req, res) => {
         const notesRef = db1.collection("Admin_notes");
         const snapshot = await notesRef
             .where("admin_id", "==", admin_id)
-            .where("IsActive", "==", true) 
+            .where("IsActive", "==", true)
             .orderBy("createdAt", "desc")
             .get();
 
@@ -1099,7 +1155,7 @@ app.get("/api/admin-links", async (req, res) => {
         const linksSnapshot = await db1
             .collection("Admin_links")
             .where("admin_id", "==", user_id)
-            .where("IsActive", "==", true) 
+            .where("IsActive", "==", true)
             .orderBy("createdAt", "desc")
             .get();
 
@@ -1551,6 +1607,24 @@ app.get('/get-quiz-analysis/:quizId', async (req, res) => {
 });
 
 
+app.get('/get-quiz-isPublished/:quizId', async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz document
+        const quizDoc = await db1.collection('Quiz').doc(quizId).get();
+        if (!quizDoc.exists) return res.status(404).json({ message: 'Quiz not found' });
+
+        const quiz = { QuizId: quizDoc.id, ...quizDoc.data() };
+        res.json({ quiz });
+
+    } catch (error) {
+        console.error("Error in /get-quiz-analysis:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
 
 app.get('/api/quiz-results/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -1614,12 +1688,12 @@ app.post('/clerk/webhook', express.json(), async (req, res) => {
 
         else if (event.type === 'user.updated') {
             const isActive = user.banned ? false : true;
-        
+
             const userSnapshot = await db1.collection('Users')
                 .where('UserId', '==', userId)
                 .limit(1)
                 .get();
-        
+
             if (!userSnapshot.empty) {
                 const userDocId = userSnapshot.docs[0].id;
                 await db1.collection('Users').doc(userDocId).update({
@@ -1632,14 +1706,14 @@ app.post('/clerk/webhook', express.json(), async (req, res) => {
                 console.log(`🔄 User updated: ${email}, IsActive = ${isActive}`);
             }
         }
-        
+
 
         else if (event.type === 'user.deleted') {
             const userSnapshot = await db1.collection('Users')
                 .where('UserId', '==', userId)
                 .limit(1)
                 .get();
-        
+
             if (!userSnapshot.empty) {
                 const userDocId = userSnapshot.docs[0].id;
                 await db1.collection('Users').doc(userDocId).update({

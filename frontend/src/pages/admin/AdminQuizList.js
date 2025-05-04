@@ -10,6 +10,7 @@ import UpdateQuestion from '../../components/Modal/UpdateQuizQuestion';
 import AddIcon from "@mui/icons-material/Add";
 import AddQuizQuestionModal from "../../components/Modal/AddQuizQuestions";
 import QuizAnalysisPDF from '../../components/QuizAnalysisPDF';
+import PublishIcon from '@mui/icons-material/CloudUpload';
 
 export default function AdminQuizList() {
     const location = useLocation();
@@ -26,6 +27,8 @@ export default function AdminQuizList() {
     const [noOfQue, setNoOfQue] = useState("");
     const [quizName, setQuizName] = useState("");
     const [QC, setQC] = useState("");
+    const [endDate, setEndDate] = useState(new Date);
+    const [isPublished, setIsPublished] = useState();
 
     useEffect(() => {
         fetchQuestions();
@@ -140,6 +143,41 @@ export default function AdminQuizList() {
         setQuizName(quizName)
     };
 
+    const handlePublish = (QuizId) => {
+        if (!window.confirm("Are you sure you want to publish this quiz?")) return;
+
+        fetch(`http://localhost:5000/publish-quiz/${QuizId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ endDate }),  // send endDate
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Quiz Published Successfully!");
+                    fetchQuizzes(); // refresh state
+                } else {
+                    alert("Error publishing quiz!");
+                }
+            })
+            .catch(error => console.error("Error publishing quiz:", error));
+    };
+
+    useEffect(() => {
+        const fetchIsPublished = async () => {
+            try {
+                const res = await fetch(`http://localhost:5000/get-quiz-isPublished/${id}`);
+                const data = await res.json();
+                setIsPublished(data.quiz.isPublished);
+            } catch (error) {
+                console.error("Error fetching publish status:", error);
+            }
+        };
+        fetchIsPublished();
+    }, [id]);
+
     return (
         <>
             <Navbar />
@@ -149,7 +187,7 @@ export default function AdminQuizList() {
                         style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/admin-quiz")}>
                         <ArrowBackIcon /> Back to Quiz
                     </button>
-                    <QuizAnalysisPDF quizId={id} />
+                    <QuizAnalysisPDF quizId={id} isPublished={isPublished} />
                 </div>
                 {quiz.map((quiz) => (
                     <React.Fragment key={quiz.QuizId}>
@@ -158,20 +196,43 @@ export default function AdminQuizList() {
                             <h4 className='text-start'>{quiz.QuizName}</h4>
                             <p>{quiz.QuizDescription}</p>
                             <p className='text-muted'>No. of Questions: {questionCounts[quiz.QuizId]}/{quiz.NumberOfQue}</p>
-                            <div>{questionCounts[quiz.QuizId] < quiz.NumberOfQue ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-primary rounded-pill mx-1 btn-sm"
-                                    style={{ boxShadow: "gray 1px 1px 8px 1px" }}
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#adaQuizQuestion"
-                                    onClick={() => handleData(quiz.QuizId, quiz.NumberOfQue, questionCounts[quiz.QuizId], quiz.QuizName)} >
-                                    <AddIcon /> Add Question
-                                </button>
-                            ) : ""}
-                                <button className="btn mb-1 border-0" data-bs-toggle="modal"
-                                    data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
-                                <button className="btn mb-1 border-0" onClick={() => handleQuizDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
+                            <p className='fw-bold fst-italic'>{quiz.isPublished ? "Published" : "Unpublished"}</p>
+                            <div>
+                                {quiz.isPublished ? ("") : (
+                                    <>
+
+                                        {
+                                            questionCounts[quiz.QuizId] < quiz.NumberOfQue ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary rounded-pill mx-1 btn-sm"
+                                                    style={{ boxShadow: "gray 1px 1px 8px 1px" }}
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#adaQuizQuestion"
+                                                    onClick={() => handleData(quiz.QuizId, quiz.NumberOfQue, questionCounts[quiz.QuizId], quiz.QuizName)} >
+                                                    <AddIcon /> Add Question
+                                                </button>
+                                            ) : (
+                                                <>
+                                                    <div className='input-group mb-3 w-50'>
+                                                        <label htmlFor="endDate" className="form-label pe-3 py-1">Quiz End Date</label>
+                                                        <input type="date" className="form-control shadow-sm rounded-3 py-1 me-3" id="endDate" placeholder='Quiz End Date' value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary rounded-pill mx-1 btn-sm"
+                                                            style={{ boxShadow: "gray 1px 1px 8px 1px" }}
+                                                            onClick={() => handlePublish(quiz.QuizId)} >
+                                                            <PublishIcon /> Publish Quiz
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )
+                                        }
+                                        <button className="btn mb-1 border-0" data-bs-toggle="modal"
+                                            data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
+                                        <button className="btn mb-1 border-0" onClick={() => handleQuizDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </React.Fragment>
@@ -186,11 +247,13 @@ export default function AdminQuizList() {
                                         <div className="card-body">
                                             <div className="d-flex justify-content-between">
                                                 <h5 className="card-title">{index + 1}. {question.QuestionText}</h5>
-                                                <div>
-                                                    <button className="btn mb-1 border-0" data-bs-toggle="modal"
-                                                        data-bs-target="#updateQuizQuestion" onClick={() => setupdateQuestionId(question.QuestionId)}><EditIcon color="success" /></button>
-                                                    <button className="btn mb-1 border-0" onClick={() => handleQuestionDelete(question.QuestionId)}><DeleteIcon color="error" /></button>
-                                                </div>
+                                                {quiz.map((quiz) => (quiz.isPublished ? ("") : (
+                                                    <div>
+                                                        <button className="btn mb-1 border-0" data-bs-toggle="modal"
+                                                            data-bs-target="#updateQuizQuestion" onClick={() => setupdateQuestionId(question.QuestionId)}><EditIcon color="success" /></button>
+                                                        <button className="btn mb-1 border-0" onClick={() => handleQuestionDelete(question.QuestionId)}><DeleteIcon color="error" /></button>
+                                                    </div>
+                                                )))}
                                             </div>
                                             <ul className="list-group mt-3">
                                                 {[1, 2, 3, 4].map(num => (
@@ -211,7 +274,7 @@ export default function AdminQuizList() {
                             <p className="text-center">No questions available</p>
                         )}
                 </div>
-            </div>
+            </div >
             <UpdateQuiz updateQuizId={updateQuizId} fetchQuizzes={fetchQuizzes} />
             <UpdateQuestion updateQuestionId={updateQuestionId} fetchQuestions={fetchQuestions} />
             <AddQuiz />

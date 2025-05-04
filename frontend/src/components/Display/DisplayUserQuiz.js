@@ -56,7 +56,7 @@ export default function DisplayUserQuiz() {
                 data.forEach(result => {
                     resultsMap[result.QuizId] = result;
                 });
-               
+
                 setQuizResults(resultsMap);
             } catch (error) {
                 console.error("Error fetching quiz results:", error);
@@ -90,6 +90,23 @@ export default function DisplayUserQuiz() {
         quiz => solvedQuizzes.has(quiz.QuizId) && questionCounts[quiz.QuizId] >= quiz.NumberOfQue
     );
 
+    const isExpired = (endDate) => {
+        const parsedDate = parseEndDate(endDate);
+        if (!parsedDate) return true; // fallback: treat as expired
+        return parsedDate < new Date();
+    };
+
+    const parseEndDate = (endDate) => {
+        if (!endDate) return null;
+
+        const timestampData = endDate;// object containing timestamp data
+        const seconds = timestampData._seconds;
+        const nanoseconds = timestampData._nanoseconds;
+        const milliseconds = seconds * 1000 + nanoseconds / 1000000;
+        const date = new Date(milliseconds);
+        return date;
+    };
+
     return (
         <>
             <div className="container mt-5">
@@ -98,28 +115,36 @@ export default function DisplayUserQuiz() {
                         <h2 className='purple-700 fw-bold fst-italic mb-2'>Unsolved Quiz</h2>
                         <div className="row">
                             {unsolvedQuizzes.map(quiz => (
-                                <div className="col-md-4 mb-3" key={quiz.QuizId}>
-                                    <div className="card shadow rounded-3">
-                                        <div className="card-body">
-                                            <h5 className="card-title purple-700 fst-italic">{quiz.QuizName}</h5>
-                                            <p className="card-text">
-                                                {quiz.QuizDescription.length > 50
-                                                    ? `${quiz.QuizDescription.substring(0, 40)}...`
-                                                    : quiz.QuizDescription}
-                                            </p>
-                                            <div className="d-flex justify-content-between align-items-center mt-3">
-                                                <span className="text-muted">Total Questions: {quiz.NumberOfQue}</span>
-                                                <button
-                                                    className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
-                                                    style={{ boxShadow: "gray 1px 1px 8px 1px" }}
-                                                    onClick={() => navigate("/user-quiz-exam", { state: { id: quiz.QuizId } })}
-                                                >
-                                                    <NearMeIcon /> Start Quiz
-                                                </button>
+                                quiz.isPublished ?
+                                    (
+                                        <div className="col-md-4 mb-3" key={quiz.QuizId}>
+                                            <div className="card shadow rounded-3">
+                                                <div className="card-body">
+                                                    <h5 className="card-title purple-700 fst-italic">{quiz.QuizName}</h5>
+                                                    <p className="card-text">
+                                                        {quiz.QuizDescription.length > 50
+                                                            ? `${quiz.QuizDescription.substring(0, 40)}...`
+                                                            : quiz.QuizDescription}
+                                                    </p>
+                                                    <div className="d-flex justify-content-between align-items-center mt-3">
+                                                        <span className="text-muted">Total Questions: {quiz.NumberOfQue}</span>
+                                                        {
+                                                            !isExpired(quiz.EndDate) ? (
+                                                                <button
+                                                                    className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
+                                                                    onClick={() => navigate("/user-quiz-exam", { state: { id: quiz.QuizId } })}
+                                                                >
+                                                                    <NearMeIcon /> Start Quiz
+                                                                </button>
+                                                            ) : (
+                                                                <p className='text-danger'>Sorry, Quiz Expired!!</p>
+                                                            )
+                                                        }
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    ) : ("")
                             ))}
                         </div>
                     </>

@@ -21,14 +21,45 @@ export default function UserQuizExam() {
     const [answers, setAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [result, setResult] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(0); // time in seconds
+
 
     useEffect(() => {
         fetchQuizzes();
         fetch(`http://localhost:5000/quiz/${quizId}`)
             .then(res => res.json())
-            .then(data => setQuestions(data))
+            .then(data => {
+                setQuestions(data);
+                const totalQuestions = data.length;
+                const totalTime = totalQuestions * 2 * 60; // in seconds
+                setTimeLeft(totalTime);
+            })
             .catch(err => console.error(err));
     }, [quizId]);
+
+    useEffect(() => {
+        if (submitted || timeLeft <= 0) return;
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    submitQuiz(); // auto-submit
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeLeft, submitted]);
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
 
     const handleAnswer = (questionId, option) => {
         setAnswers(prev => ({ ...prev, [questionId]: option }));
@@ -73,58 +104,66 @@ export default function UserQuizExam() {
     return (
         <>
             <Navbar />
-            <div className="container mt-4">
-                <div className="text-start">
-                    <button className="btn btn-primary rounded-pill mb-1"
-                        style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-quiz")}>
-                        <ArrowBackIcon /> Back to Quiz
-                    </button>
+            <div className="container my-3 shadow p-3 rounded-3">
+                <div className='row'>
+                    <div className="col-md-8">
+                        {quiz.map((quiz) => (
+                            <React.Fragment key={quiz.QuizId}>
+                                <div className="">
+                                    <h2 className='purple-700 fw-bold fst-italic'>Quiz</h2>
+                                    <h4 className='text-start'>{quiz.QuizName}</h4>
+                                    <p>{quiz.QuizDescription}</p>
+                                </div>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                    <div className="col-md-4">
+                        {!submitted && (
+                            <div className="alert alert-info text-center fs-5 fw-bold">
+                                <div className='mb-3 text-end'>
+                                    Time Left: {formatTime(timeLeft)}
+                                </div>
+                                <div className="d-flex flex-wrap justify-content-center">
+                                    {questions.map((q, index) => (
+                                        <button
+                                            key={q.QuestionId}
+                                            className={`btn rounded-3 mx-1 mb-1 ${answers[q.QuestionId] ? 'btn-primary' : 'btn-secondary'}`}
+                                            onClick={() => setCurrentIndex(index)}
+                                        >
+                                            {index + 1}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-            <div className="container mt-3 mb-5 shadow p-3 rounded-3">
-                {quiz.map((quiz) => (
-                    <React.Fragment key={quiz.QuizId}>
-                        <div className="">
-                            <h2 className='purple-700 fw-bold fst-italic'>Quiz</h2>
-                            <h4 className='text-start'>{quiz.QuizName}</h4>
-                            <p>{quiz.QuizDescription}</p>
-                        </div>
-                    </React.Fragment>
-                ))}
                 {!submitted ? (
                     <div>
-                        <div className="d-flex flex-wrap justify-content-center mb-3">
-                            {questions.map((q, index) => (
-                                <button
-                                    key={q.QuestionId}
-                                    className={`btn rounded-3 mx-1 ${answers[q.QuestionId] ? 'btn-primary' : 'btn-secondary'}`}
-                                    onClick={() => setCurrentIndex(index)}
-                                >
-                                    {index + 1}
-                                </button>
-                            ))}
-                        </div>
                         {questions.length > 0 && (
                             <div className="card p-3">
                                 <h3 className='purple-700 fst-italic'>{currentIndex + 1}. {questions[currentIndex].QuestionText}</h3>
                                 <div className="row">
                                     {[1, 2, 3, 4].map(num => (
                                         <div key={num} className="form-check col-md-6">
-                                            <div className='row p-3 rounded shadow m-3' style={{ fontSize: "18px" }}>
+                                            <label
+                                                className='row p-3 rounded shadow m-3'
+                                                style={{ fontSize: "18px", cursor: "pointer" }}
+                                            >
                                                 <div className='col-md-1 d-flex justify-content-end p-0 align-items-center'>
-
                                                     <input
                                                         type="radio"
                                                         className="form-check-input border border-primary border-3"
                                                         name={`question-${questions[currentIndex].QuestionId}`}
                                                         checked={answers[questions[currentIndex].QuestionId] === num}
                                                         onChange={() => handleAnswer(questions[currentIndex].QuestionId, num)}
+                                                        style={{ cursor: "pointer" }}
                                                     />
                                                 </div>
                                                 <div className="col-md-11">
-                                                    <label className="form-check-label">{num}. {questions[currentIndex][`Option${num}`]}</label>
+                                                    <span className="form-check-label">{num}. {questions[currentIndex][`Option${num}`]}</span>
                                                 </div>
-                                            </div>
+                                            </label>
                                         </div>
                                     ))}
                                 </div>
@@ -136,6 +175,9 @@ export default function UserQuizExam() {
                                     >
                                         Previous
                                     </button>
+                                    <div className='text-center'>
+                                        <button className="btn btn-primary" disabled={Object.keys(answers).length !== questions.length} onClick={submitQuiz}>Submit Quiz</button>
+                                    </div>
                                     <button
                                         className="btn btn-primary"
                                         disabled={currentIndex === questions.length - 1}
@@ -143,9 +185,6 @@ export default function UserQuizExam() {
                                     >
                                         Next
                                     </button>
-                                </div>
-                                <div className='text-center'>
-                                    <button className="btn btn-primary mt-3" disabled={Object.keys(answers).length !== questions.length} onClick={submitQuiz}>Submit Quiz</button>
                                 </div>
                             </div>
                         )}
