@@ -30,7 +30,7 @@ function AdminUpdateLink({ linkData, modalRefEditLink,triggerReload}) {
 
 
         try {
-            const res = await fetch("http://localhost:5000/api/admin-links/update-link", {
+            const res = await fetch("https://programming-prep.onrender.com/api/admin-links/update-link", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),

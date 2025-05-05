@@ -18,7 +18,7 @@ export default function DisplayUserQuiz() {
 
     // Fetch all quizzes
     useEffect(() => {
-        fetch("http://localhost:5000/api/quizzes")
+        fetch("https://programming-prep.onrender.com/api/quizzes")
             .then((response) => response.json())
             .then((data) => {
                 setQuizzes(data);
@@ -34,7 +34,7 @@ export default function DisplayUserQuiz() {
     useEffect(() => {
         const fetchSolvedQuizzes = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/solved-quizzes/${userId}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/solved-quizzes/${userId}`);
                 const data = await response.json();
                 const solvedSet = new Set(data.map(item => item.QuizId));
                 setSolvedQuizzes(solvedSet);
@@ -50,7 +50,7 @@ export default function DisplayUserQuiz() {
     useEffect(() => {
         const fetchQuizResults = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/quiz-results/${userId}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/quiz-results/${userId}`);
                 const data = await response.json();
                 const resultsMap = {};
                 data.forEach(result => {
@@ -69,7 +69,7 @@ export default function DisplayUserQuiz() {
     // Count questions
     const fetchQuestionCount = async (quizId) => {
         try {
-            const response = await fetch(`http://localhost:5000/get-question-count/${quizId}`);
+            const response = await fetch(`https://programming-prep.onrender.com/get-question-count/${quizId}`);
             const data = await response.json();
             if (response.ok) {
                 setQuestionCounts(prevCounts => ({

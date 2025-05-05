@@ -24,7 +24,7 @@ function DisplayLink() {
   // Fetch files from all users
   const fetchLinks = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/links?user_id=${user.id}`);
+      const res = await fetch(`https://programming-prep.onrender.com/api/links?user_id=${user.id}`);
       const data = await res.json();
       setLinks(data);
       setLoading(false);
@@ -45,7 +45,7 @@ function DisplayLink() {
     if (!window.confirm("Are you sure you want to delete this link?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/links/delete/${linkId}`, {
+      const res = await fetch(`https://programming-prep.onrender.com/api/links/delete/${linkId}`, {
         method: "DELETE",
       });
 
@@ -75,7 +75,7 @@ function DisplayLink() {
   const handleViewLink = async (link) => {
     try {
       // Increment view count on the server
-      const response = await fetch(`http://localhost:5000/api/links/${link.id}/view`, {
+      const response = await fetch(`https://programming-prep.onrender.com/api/links/${link.id}/view`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

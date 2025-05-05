@@ -26,7 +26,7 @@ export default function UserQuizExam() {
 
     useEffect(() => {
         fetchQuizzes();
-        fetch(`http://localhost:5000/quiz/${quizId}`)
+        fetch(`https://programming-prep.onrender.com/quiz/${quizId}`)
             .then(res => res.json())
             .then(data => {
                 setQuestions(data);
@@ -71,7 +71,7 @@ export default function UserQuizExam() {
             selectedOption: answers[qid]
         }));
 
-        fetch('http://localhost:5000/submit-quiz', {
+        fetch('https://programming-prep.onrender.com/submit-quiz', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId, quizId, answers: formattedAnswers })
@@ -87,7 +87,7 @@ export default function UserQuizExam() {
     const fetchQuizzes = () => {
         if (!quizId) return;
 
-        fetch(`http://localhost:5000/get-quiz-by-id/${quizId}`)
+        fetch(`https://programming-prep.onrender.com/get-quiz-by-id/${quizId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch questions');

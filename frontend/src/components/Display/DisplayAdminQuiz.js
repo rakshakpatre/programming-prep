@@ -29,7 +29,7 @@ export default function DisplayQuiz() {
 
 
     const fetchQuizzes = () => {
-        fetch("http://localhost:5000/api/quizzes")
+        fetch("https://programming-prep.onrender.com/api/quizzes")
             .then((response) => response.json())
             .then((data) => {
                 setQuizzes(data);
@@ -55,7 +55,7 @@ export default function DisplayQuiz() {
     // Function to fetch count of added questions
     const fetchQuestionCount = async (quizId) => {
         try {
-            const response = await fetch(`http://localhost:5000/get-question-count/${quizId}`);
+            const response = await fetch(`https://programming-prep.onrender.com/get-question-count/${quizId}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -83,7 +83,7 @@ export default function DisplayQuiz() {
     const handleDelete = (id) => {
         if (!window.confirm("Are you sure you want to delete this quiz?")) return;
 
-        fetch(`http://localhost:5000/soft-delete-quiz/${id}`, { method: 'PUT' })
+        fetch(`https://programming-prep.onrender.com/soft-delete-quiz/${id}`, { method: 'PUT' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {

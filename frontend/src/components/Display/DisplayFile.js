@@ -28,7 +28,7 @@ const DisplayFile = () => {
         if (!user?.id) return;
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:5000/api/notes?user_id=${user.id}`);
+            const res = await fetch(`https://programming-prep.onrender.com/api/notes?user_id=${user.id}`);
             if (!res.ok) throw new Error("Failed to fetch notes");
             const data = await res.json();
             setNotes(data || []);
@@ -65,7 +65,7 @@ const DisplayFile = () => {
     const handleViewNote = async (note) => {
         try {
             // Increment view count on the server
-            const response = await fetch(`http://localhost:5000/api/notes/${note.id}/view`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/notes/${note.id}/view`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -114,7 +114,7 @@ const DisplayFile = () => {
 
         try {
             // First increment download count on the server
-            const countResponse = await fetch(`http://localhost:5000/api/notes/${note.id}/download`, {
+            const countResponse = await fetch(`https://programming-prep.onrender.com/api/notes/${note.id}/download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -134,7 +134,7 @@ const DisplayFile = () => {
             );
 
             // Now download the file
-            const fileURL = `http://localhost:5000/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
+            const fileURL = `https://programming-prep.onrender.com/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
             const response = await fetch(fileURL, { method: "GET" });
 
             if (!response.ok) {
@@ -170,7 +170,7 @@ const DisplayFile = () => {
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/notes/delete/${noteId}`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/notes/delete/${noteId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -385,7 +385,7 @@ const DisplayFile = () => {
             {/* ✅ File Viewer Modal */}
             <FileViewerModal
                 modalRef={modalRef}
-                fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
+                fileURL={selectedNote ? `https://programming-prep.onrender.com/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
                 fileType="docx"
                 title={selectedNote?.title}
                 content={selectedNote?.content}

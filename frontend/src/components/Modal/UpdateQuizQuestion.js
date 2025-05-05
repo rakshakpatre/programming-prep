@@ -15,7 +15,7 @@ export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions })
     useEffect(() => {
         if (!updateQuestionId) return;
     
-        fetch(`http://localhost:5000/get-question-by-id/${updateQuestionId}`)
+        fetch(`https://programming-prep.onrender.com/get-question-by-id/${updateQuestionId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch question');
@@ -52,7 +52,7 @@ export default function UpdateQuizQuestion({ updateQuestionId, fetchQuestions })
 
     const handleSubmit = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/update-question/${updateQuestionId}`, {
+            const response = await fetch(`https://programming-prep.onrender.com/update-question/${updateQuestionId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(questionData),

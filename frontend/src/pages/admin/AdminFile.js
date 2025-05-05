@@ -23,12 +23,12 @@ const Explore = () => {
 
             try {
                 if (type === "links") {
-                    const res = await axios.get("http://localhost:5000/api/admin-links", {
+                    const res = await axios.get("https://programming-prep.onrender.com/api/admin-links", {
                         params: { user_id: user.id },
                     });
                     setLinksData(res.data);
                 } else {
-                    const res = await axios.get("http://localhost:5000/api/admin-notes", {
+                    const res = await axios.get("https://programming-prep.onrender.com/api/admin-notes", {
                         params: { admin_id: user.id }, // ✅ Correct param name!
                     });
                     setNotesData(res.data);

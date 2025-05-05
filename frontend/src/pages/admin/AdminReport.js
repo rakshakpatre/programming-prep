@@ -15,7 +15,7 @@ export default function AdminReport() {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/users');
+            const res = await axios.get('https://programming-prep.onrender.com/api/users');
             console.log('Fetched users:', res.data);
             setUsers(res.data);
             return res.data;
@@ -41,14 +41,14 @@ export default function AdminReport() {
                 allUsers.map(async (user) => {
                     try {
                         const [notesRes, linksRes] = await Promise.all([
-                            axios.get('http://localhost:5000/api/date-wise-notes', {
+                            axios.get('https://programming-prep.onrender.com/api/date-wise-notes', {
                                 params: {
                                     user_id: user.UserId,
                                     from: from.toISOString(),
                                     to: to.toISOString(),
                                 },
                             }),
-                            axios.get('http://localhost:5000/api/date-wise-links', {
+                            axios.get('https://programming-prep.onrender.com/api/date-wise-links', {
                                 params: {
                                     user_id: user.UserId,
                                     from: from.toISOString(),

@@ -25,7 +25,7 @@ const AdminDisplayFile = () => {
 
     const fetchNotes = useCallback(async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/admin-notes?admin_id=${user.id}`);
+            const res = await fetch(`https://programming-prep.onrender.com/api/admin-notes?admin_id=${user.id}`);
             if (!res.ok) throw new Error("Failed to fetch notes");
             const data = await res.json();
             setNotes(data);
@@ -61,7 +61,7 @@ const AdminDisplayFile = () => {
     const handleViewNote = async (note) => {
         try {
             // Increment view count on the server
-            const response = await fetch(`http://localhost:5000/api/admin-notes/${note.id}/view`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/admin-notes/${note.id}/view`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -110,7 +110,7 @@ const AdminDisplayFile = () => {
 
         try {
             // First increment download count on the server
-            const countResponse = await fetch(`http://localhost:5000/api/admin-notes/${note.id}/download`, {
+            const countResponse = await fetch(`https://programming-prep.onrender.com/api/admin-notes/${note.id}/download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -130,7 +130,7 @@ const AdminDisplayFile = () => {
             );
 
             // Now download the file
-            const fileURL = `http://localhost:5000/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
+            const fileURL = `https://programming-prep.onrender.com/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
             const response = await fetch(fileURL, { method: "GET" });
 
             if (!response.ok) {
@@ -166,7 +166,7 @@ const AdminDisplayFile = () => {
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch(`http://localhost:5000/api/admin-notes/delete/${noteId}`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/admin-notes/delete/${noteId}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -379,7 +379,7 @@ const AdminDisplayFile = () => {
             {/* ✅ File Viewer Modal */}
             <FileViewerModal
                 modalRef={modalRef}
-                fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
+                fileURL={selectedNote ? `https://programming-prep.onrender.com/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
                 fileType="docx"
                 title={selectedNote?.title}
                 content={selectedNote?.content}

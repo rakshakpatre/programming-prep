@@ -18,7 +18,7 @@ export default function AdminAddLink({ fetchLinks }) {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/admin-links/addLink", {
+      const res = await fetch("https://programming-prep.onrender.com/api/admin-links/addLink", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

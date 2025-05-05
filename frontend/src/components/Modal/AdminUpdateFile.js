@@ -28,7 +28,7 @@ function AdminUpdateFile({ noteData, modalRefEdit, triggerReload }) {
         if (file) formData.append("file", file);
 
         try {
-            const res = await fetch("http://localhost:5000/api/admin-notes/update-note", {
+            const res = await fetch("https://programming-prep.onrender.com/api/admin-notes/update-note", {
                 method: "POST",
                 body: formData,
             });

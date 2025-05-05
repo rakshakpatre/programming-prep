@@ -23,7 +23,7 @@ function DisplayPublic() {
     // Fetch only public notes from all users
     const fetchPublicNotes = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/notes/public`);
+            const res = await fetch(`https://programming-prep.onrender.com/api/notes/public`);
             const data = await res.json();
             console.log("Public Notes:", data);
             setPublicNotes(data);
@@ -45,7 +45,7 @@ function DisplayPublic() {
     const handleViewNoteUser = async (note) => {
         try {
             // Increment view count in backend
-            const response = await fetch(`http://localhost:5000/api/notes/public/${note.id}/view`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/notes/public/${note.id}/view`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
@@ -94,7 +94,7 @@ function DisplayPublic() {
 
         try {
             // Step 1: Increment download count in backend
-            const countResponse = await fetch(`http://localhost:5000/api/notes/public/${note.id}/download`, {
+            const countResponse = await fetch(`https://programming-prep.onrender.com/api/notes/public/${note.id}/download`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
             });
@@ -114,7 +114,7 @@ function DisplayPublic() {
             );
 
             // Step 4: Proceed to download the file
-            const fileURL = `http://localhost:5000/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
+            const fileURL = `https://programming-prep.onrender.com/${note.file_path.startsWith('/') ? note.file_path.substring(1) : note.file_path}`;
             const response = await fetch(fileURL, { method: "GET" });
 
             if (!response.ok) {
@@ -313,7 +313,7 @@ function DisplayPublic() {
 
             <FileViewerModal
                 modalRef={modalRef}
-                fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
+                fileURL={selectedNote ? `https://programming-prep.onrender.com/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
                 fileType="docx"
                 title={selectedNote?.title}
                 content={selectedNote?.content}

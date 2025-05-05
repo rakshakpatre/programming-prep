@@ -25,7 +25,7 @@ export default function AddLink() {
       isPublic: isPublic ? "1" : "0"
      };
     try {
-      const res = await fetch("http://localhost:5000/api/links/addLink", {
+      const res = await fetch("https://programming-prep.onrender.com/api/links/addLink", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",  // Ensure JSON is sent

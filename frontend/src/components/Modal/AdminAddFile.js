@@ -32,7 +32,7 @@ export default function AdminAddFile({ fetchNotes }) {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin-notes/add", {
+      const res = await fetch("https://programming-prep.onrender.com/api/admin-notes/add", {
         method: "POST",
         body: formData,
       });

@@ -37,7 +37,7 @@ export default function AdminQuizList() {
     const fetchQuestions = () => {
         if (!id) return; // Prevent API call if ID is not available
 
-        fetch(`http://localhost:5000/get-questions/${id}`)
+        fetch(`https://programming-prep.onrender.com/get-questions/${id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch questions');
@@ -61,7 +61,7 @@ export default function AdminQuizList() {
     const fetchQuizzes = () => {
         if (!id) return;
 
-        fetch(`http://localhost:5000/get-quiz-by-id/${id}`)
+        fetch(`https://programming-prep.onrender.com/get-quiz-by-id/${id}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch questions');
@@ -86,7 +86,7 @@ export default function AdminQuizList() {
     // Function to fetch count of added questions
     const fetchQuestionCount = async (quizId) => {
         try {
-            const response = await fetch(`http://localhost:5000/get-question-count/${quizId}`);
+            const response = await fetch(`https://programming-prep.onrender.com/get-question-count/${quizId}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -106,7 +106,7 @@ export default function AdminQuizList() {
     const handleQuizDelete = (id) => {
         if (!window.confirm("Are you sure you want to delete this quiz?")) return;
 
-        fetch(`http://localhost:5000/soft-delete-quiz/${id}`, { method: 'PUT' })
+        fetch(`https://programming-prep.onrender.com/soft-delete-quiz/${id}`, { method: 'PUT' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -122,7 +122,7 @@ export default function AdminQuizList() {
     const handleQuestionDelete = (id) => {
         if (!window.confirm("Are you sure you want to delete this Question?")) return;
 
-        fetch(`http://localhost:5000/soft-delete-question/${id}`, { method: 'PUT' })
+        fetch(`https://programming-prep.onrender.com/soft-delete-question/${id}`, { method: 'PUT' })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -146,7 +146,7 @@ export default function AdminQuizList() {
     const handlePublish = (QuizId) => {
         if (!window.confirm("Are you sure you want to publish this quiz?")) return;
 
-        fetch(`http://localhost:5000/publish-quiz/${QuizId}`, {
+        fetch(`https://programming-prep.onrender.com/publish-quiz/${QuizId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ export default function AdminQuizList() {
     useEffect(() => {
         const fetchIsPublished = async () => {
             try {
-                const res = await fetch(`http://localhost:5000/get-quiz-isPublished/${id}`);
+                const res = await fetch(`https://programming-prep.onrender.com/get-quiz-isPublished/${id}`);
                 const data = await res.json();
                 setIsPublished(data.quiz.isPublished);
             } catch (error) {

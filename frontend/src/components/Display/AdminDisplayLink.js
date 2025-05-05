@@ -23,7 +23,7 @@ function AdminDisplayLink() {
   // Fetch files from all users
   const fetchLinks = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/admin-links?user_id=${user.id}`);
+      const res = await fetch(`https://programming-prep.onrender.com/api/admin-links?user_id=${user.id}`);
       const data = await res.json();
       setLinks(data);
       setLoading(false);
@@ -47,7 +47,7 @@ function AdminDisplayLink() {
     if (!window.confirm("Are you sure you want to delete this link?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/admin-links/delete/${linkId}`, {
+      const res = await fetch(`https://programming-prep.onrender.com/api/admin-links/delete/${linkId}`, {
         method: "DELETE",
       });
 
@@ -77,7 +77,7 @@ function AdminDisplayLink() {
   const handleViewAddLink = async (link) => {
     try {
       // Increment view count on the server
-      const response = await fetch(`http://localhost:5000/api/admin-links/${link.id}/view`, {
+      const response = await fetch(`https://programming-prep.onrender.com/api/admin-links/${link.id}/view`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

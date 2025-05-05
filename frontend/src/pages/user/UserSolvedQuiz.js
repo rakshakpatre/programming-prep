@@ -23,7 +23,7 @@ export default function UserSolvedQuiz() {
     useEffect(() => {
         const fetchQuizDetails = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/quiz/${quizId}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/quiz/${quizId}`);
                 if (!response.ok) throw new Error("Quiz not found");
                 const data = await response.json();
                 setQuizData(data);
@@ -34,7 +34,7 @@ export default function UserSolvedQuiz() {
     
         const fetchQuizResult = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/quiz/result/${quizId}/${user?.id}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/quiz/result/${quizId}/${user?.id}`);
                 if (!response.ok) throw new Error("Quiz result not found");
                 const data = await response.json();
                 setQuizResult(data);
@@ -45,7 +45,7 @@ export default function UserSolvedQuiz() {
     
         const fetchQuestions = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/quiz/questions/${quizId}/${user?.id}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/quiz/questions/${quizId}/${user?.id}`);
                 if (!response.ok) throw new Error("Questions not found");
                 const data = await response.json();
                 setQuestions(data);

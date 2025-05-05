@@ -14,7 +14,7 @@ export default function UpdateQuiz({ updateQuizId, fetchQuizzes }) {
     useEffect(() => {
         if (!updateQuizId) return;
 
-        fetch(`http://localhost:5000/get-quiz-by-id/${updateQuizId}`)
+        fetch(`https://programming-prep.onrender.com/get-quiz-by-id/${updateQuizId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch questions');
@@ -41,7 +41,7 @@ export default function UpdateQuiz({ updateQuizId, fetchQuizzes }) {
     // Function to fetch count of added questions
     const fetchQuestionCount = async (quizId) => {
         try {
-            const response = await fetch(`http://localhost:5000/get-question-count/${quizId}`);
+            const response = await fetch(`https://programming-prep.onrender.com/get-question-count/${quizId}`);
             const data = await response.json();
 
             if (response.ok) {
@@ -73,7 +73,7 @@ export default function UpdateQuiz({ updateQuizId, fetchQuizzes }) {
         const quiz = { id: updateQuizId, quizName, description, noOfQue };
 
         try {
-            const res = await fetch(`http://localhost:5000/updateQuiz`, {
+            const res = await fetch(`https://programming-prep.onrender.com/updateQuiz`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(quiz),

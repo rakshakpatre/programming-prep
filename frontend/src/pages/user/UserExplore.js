@@ -25,12 +25,12 @@ const UserExplore = () => {
 
             try {
                 if (type === "links") {
-                    const res = await axios.get("http://localhost:5000/api/links", {
+                    const res = await axios.get("https://programming-prep.onrender.com/api/links", {
                         params: { user_id: user.id },
                     });
                     setLinksData(res.data);
                 } else{
-                    const res = await axios.get("http://localhost:5000/api/notes", {
+                    const res = await axios.get("https://programming-prep.onrender.com/api/notes", {
                         params: { user_id: user.id },
                     });
                     setNotesData(res.data);

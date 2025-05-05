@@ -13,7 +13,7 @@ export default function QuizAnalysisPDF({ quizId }) {
         setLoading(true);
 
         try {
-            const res = await fetch(`http://localhost:5000/get-quiz-analysis/${quizId}`);
+            const res = await fetch(`https://programming-prep.onrender.com/get-quiz-analysis/${quizId}`);
             const data = await res.json();
 
             const quiz = data.quiz;

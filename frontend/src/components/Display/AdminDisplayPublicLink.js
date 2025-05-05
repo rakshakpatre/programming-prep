@@ -14,7 +14,7 @@ function AdminDisplayPublicLink() {
   useEffect(() => {
     const fetchLinks = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/admin-links/public");
+        const response = await fetch("https://programming-prep.onrender.com/api/admin-links/public");
 
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -43,7 +43,7 @@ function AdminDisplayPublicLink() {
   const handleViewLink = async (link) => {
     try {
       // Increment view count on the server
-      const response = await fetch(`http://localhost:5000/api/admin-links/${link.id}/view`, {
+      const response = await fetch(`https://programming-prep.onrender.com/api/admin-links/${link.id}/view`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

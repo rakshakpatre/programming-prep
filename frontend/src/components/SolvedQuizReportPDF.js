@@ -134,7 +134,7 @@ const SolvedQuizReportPDF = () => {
     useEffect(() => {
         const fetchReportData = async () => {
             try {
-                const response = await fetch(`http://localhost:5000/api/solved-quiz-report/${user.id}`);
+                const response = await fetch(`https://programming-prep.onrender.com/api/solved-quiz-report/${user.id}`);
                 const data = await response.json();
                 setReportData(data);
             } catch (error) {
