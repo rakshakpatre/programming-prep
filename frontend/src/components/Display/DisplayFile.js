@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef} from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -38,7 +38,7 @@ const DisplayFile = () => {
             setLoading(false);
         }
     };
-    
+
     useEffect(() => {
         if (user?.id) {
             fetchNotes();
@@ -224,93 +224,98 @@ const DisplayFile = () => {
             <UpdateFile noteData={selectedNote} modalRefEdit={modalRefEdit} triggerReload={triggerReload} />
             {location.pathname === "/user-dashboard" ? (
                 <div className="container">
-                    <div className="row">
-                        {(
-                            <>
+                    {notes.length > 0 && (
+                        <>
+                            <h2 className="fst-italic purple-700 fw-bold mt-3">My Notes</h2>
+                            <div className="row">
                                 {(
-                                    notes.slice(0, visibleLinks).map((note) => (
-                                        <div className="col-sm-6 col-md-4 mb-3" style={{
-                                            maxWidth: '540px'
-                                        }} key={note.id}>
-                                            <h2 className="fst-italic purple-700 fw-bold mt-3">My Notes</h2>
-                                            <div className="p-1 card shadow rounded-3"
-                                                style={{
-                                                    maxHeight: '190px'
-                                                }}>
-                                                <div className="row g-0 p-1">
-                                                    <div className="col-2 d-flex justify-content-center align-items-center">
-                                                        <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                                                    </div>
-                                                    <div className="col-9">
-                                                        <div className="card-body d-flex flex-column h-100" >
-                                                            <h5 className="card-title fst-italic purple-700">
-                                                                {note.title}
-                                                                {note.isPublic === true && (
-                                                                    <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                                                                )}
-                                                                {note.isPublic === false && (
-                                                                    <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                                                                )}
-                                                            </h5>
-                                                            <p className="card-text flex-grow-1">{note.content.length > 50
-                                                                ? `${note.content.substring(0, 50)}...`
-                                                                : note.content}</p>
+                                    <>
+                                        {(
+                                            notes.slice(0, visibleLinks).map((note) => (
+                                                <div className="col-sm-6 col-md-4 mb-3" style={{
+                                                    maxWidth: '540px'
+                                                }}
 
-                                                            <p className="card-text mb-1 d-flex justify-content-between">
-                                                                <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
-                                                                <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
-                                                            </p>
-                                                            {/* <p className="card-text mb-1">
+                                                    key={note.id}>
+                                                    <div className="p-1 card shadow rounded-3"
+                                                        style={{
+                                                            maxHeight: '190px'
+                                                        }}>
+                                                        <div className="row g-0 p-1">
+                                                            <div className="col-2 d-flex justify-content-center align-items-center">
+                                                                <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                            </div>
+                                                            <div className="col-9">
+                                                                <div className="card-body d-flex flex-column h-100" >
+                                                                    <h5 className="card-title fst-italic purple-700">
+                                                                        {note.title}
+                                                                        {note.isPublic === true && (
+                                                                            <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                                        )}
+                                                                        {note.isPublic === false && (
+                                                                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                                                        )}
+                                                                    </h5>
+                                                                    <p className="card-text flex-grow-1">{note.content.length > 50
+                                                                        ? `${note.content.substring(0, 50)}...`
+                                                                        : note.content}</p>
+
+                                                                    <p className="card-text mb-1 d-flex justify-content-between">
+                                                                        <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
+                                                                        <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                                    </p>
+                                                                    {/* <p className="card-text mb-1">
                                                                 <small className="text-black">Shared by: {user?.fullName || ""}</small>
                                                             </p> */}
+                                                                </div>
+                                                            </div>
+                                                            <div className='col-1 d-flex align-items-start flex-column'>
+                                                                <button className="btn mb-1 border-0" onClick={() => handleDownloadNote(note)}>
+                                                                    <CloudDownloadIcon color="action" />
+                                                                </button>
+                                                                <button className="btn mb-1 border-0" onClick={() => handleViewNote(note)}>
+                                                                    <VisibilityIcon color="info" />
+                                                                </button>
+                                                                {/* Only show edit and delete buttons for user's own notes */}
+                                                                {note.user_id === user.id && (
+                                                                    <>
+                                                                        <button className="btn mb-1 border-0" onClick={() => handleEditNote(note)}>
+                                                                            <EditIcon color="success" />
+                                                                        </button>
+                                                                        <button className="btn mb-1 border-0" onClick={() => handleDeleteNote(note.id)}>
+                                                                            <DeleteIcon color="error" />
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className='col-1 d-flex align-items-start flex-column'>
-                                                        <button className="btn mb-1 border-0" onClick={() => handleDownloadNote(note)}>
-                                                            <CloudDownloadIcon color="action" />
-                                                        </button>
-                                                        <button className="btn mb-1 border-0" onClick={() => handleViewNote(note)}>
-                                                            <VisibilityIcon color="info" />
-                                                        </button>
-                                                        {/* Only show edit and delete buttons for user's own notes */}
-                                                        {note.user_id === user.id && (
-                                                            <>
-                                                                <button className="btn mb-1 border-0" onClick={() => handleEditNote(note)}>
-                                                                    <EditIcon color="success" />
-                                                                </button>
-                                                                <button className="btn mb-1 border-0" onClick={() => handleDeleteNote(note.id)}>
-                                                                    <DeleteIcon color="error" />
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
 
-                                    ))
+                                            ))
+                                        )}
+                                    </>
                                 )}
-                            </>
-                        )}
 
-                        {/* View More / View Less Buttons */}
-                        {notes.length > 3 && (
-                            <div className="text-end mt-3">
-                                <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-explore?type=notes")}>
-                                    Explore All <ArrowRightIcon size="large" />
-                                </Button>
+                                {/* View More / View Less Buttons */}
+                                {notes.length > 0 && (
+                                    <div className="text-end mt-3">
+                                        <Button variant="primary rounded-pill" style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-explore?type=notes")}>
+                                            Explore All <ArrowRightIcon size="large" />
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
+                        </>
+                    )}
                 </div>
             ) : (
                 <div className="mt-1">
-                    <div className="row">
-                        {loading ? (
-                            <p>Loading notes...</p>) : (
-                            <>
-                                <h2 className="fst-italic purple-700 fw-bold mt-3">My Notes</h2>
-                                {notes.length > 0 ? (
+                    {notes.length > 0 && (
+                        <>
+                            <h2 className="fst-italic purple-700 fw-bold mt-3">My Notes</h2>
+                            <div className="row">
+                                {
                                     notes.map((note) => (
                                         <div className="col-sm-6 col-md-4 mb-3" style={{
                                             maxWidth: '540px'
@@ -343,8 +348,8 @@ const DisplayFile = () => {
                                                                 <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
                                                             </p>
                                                             {/* <p className="card-text mb-1">
-                                                                <small className="text-black">Shared by: {user?.fullName || ""}</small>
-                                                            </p> */}
+                                                                    <small className="text-black">Shared by: {user?.fullName || ""}</small>
+                                                                </p> */}
                                                         </div>
                                                     </div>
                                                     <div className='col-1 d-flex align-items-start flex-column'>
@@ -370,13 +375,10 @@ const DisplayFile = () => {
                                             </div>
                                         </div>
 
-                                    ))
-                                ) : (
-                                    <p>No notes found</p>
-                                )}
-                            </>
-                        )}
-                    </div>
+                                    ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 

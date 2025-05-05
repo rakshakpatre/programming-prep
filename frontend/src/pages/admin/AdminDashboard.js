@@ -1,19 +1,14 @@
 import React from 'react'
-// import { Routes, Route } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-// import Quiz from "../pages/Quiz";
-
 import FileIcon from '@mui/icons-material/NoteAdd';
 import LinkIcon from '@mui/icons-material/AddLink';
-// import NotesIcon from '@mui/icons-material/Notes';
-// import CodeIcon from '@mui/icons-material/Code';
-// import ThemeButton from '../../components/ThemeButton';
-// import DisplayFile from '../../components/Display/DisplayFile';
+
 import AdminAddFile from '../../components/Modal/AdminAddFile';
-// import AddLink from "../../components/Modal/AddLink";
 import AdminDisplayFile from "../../components/Display/AdminDisplayFile";
 import AdminAddLink from '../../components/Modal/AdminAddLink';
 import AdminDisplayLink from '../../components/Display/AdminDisplayLink';
+import AdminDisplayPublicNote from '../../components/Display/AdminDisplayPublicNote';
+import DisplayPublic from '../../components/Display/DisplayPublicNote';
 
 
 function AdminDashboard() {
@@ -50,6 +45,7 @@ function AdminDashboard() {
         <div className="row">
          <AdminDisplayFile/>
          <AdminDisplayLink/>
+         <DisplayPublic/>
         </div>
       </div>
     </>

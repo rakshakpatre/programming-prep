@@ -25,6 +25,7 @@ function DisplayPublic() {
         try {
             const res = await fetch(`http://localhost:5000/api/notes/public`);
             const data = await res.json();
+            console.log("Public Notes:", data);
             setPublicNotes(data);
         } catch (error) {
             console.error("Error fetching public notes:", error);
@@ -38,7 +39,7 @@ function DisplayPublic() {
         }
     }, [user]);
 
-    
+
     //------------------ Increment View count for a Public note---------------------------
 
     const handleViewNoteUser = async (note) => {
@@ -171,132 +172,141 @@ function DisplayPublic() {
 
     return (
         <>
-            {location.pathname === "/user-dashboard" ? (
+            {location.pathname === "/user-dashboard" || "/admin-dashboard" ? (
                 <div className="container mt-3">
-                <div className="row">
-                    {publicNotes.length > 0 ? (
-                        publicNotes
-                        .filter(note => note.user_id !== user.id && note.isPublic === true) // Only other users' public notes
-                        .slice(0, visibleLinks)
-                        .map(note => (
-                            <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                    <h3 className="mb-3 fst-italic purple-700 fw-bold">Public Notes & Links</h3>
-                                    <div className="p-1 card shadow" style={{ height: '170px' }}>
-                                        <div className="row g-0 p-1">
-                                            <div className="col-2 d-flex justify-content-center align-items-center">
-                                                <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                                            </div>
-                                            <div className="col-9">
-                                                <div className="card-body d-flex flex-column h-100">
-                                                    <h5 className="card-title fst-italic purple-700">
-                                                        {note.title}
-                                                        <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                                                    </h5>
-                                                    <p className="card-text flex-grow-1">
-                                                        {note.content.length > 50
-                                                            ? `${note.content.substring(0, 50)}...`
-                                                            : note.content}
-                                                    </p>
-                                                    {note.firstName && note.lastName && (
-                                                        <p className="card-text mb-1">
-                                                            <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
-                                                        </p>
-                                                    )}
-                                                    <p className="card-text mb-1 d-flex justify-content-between">
-                                                        <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
-                                                        <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
-                                                    </p>
+                    {publicNotes.length > 0 && (
+                        <>
+                            <h3 className="mb-3 fst-italic purple-700 fw-bold">Public Notes & Links</h3>
+                            <div className="row">
+                                {(
+                                    publicNotes
+                                        .filter(note => note.user_id !== user.id && note.isPublic === true) // Only other users' public notes
+                                        .slice(0, visibleLinks)
+                                        .map(note => (
+                                            <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
+                                                <div className="p-1 card shadow" style={{ height: '190px' }}>
+                                                    <div className="row g-0 p-1">
+                                                        <div className="col-2 d-flex justify-content-center align-items-center">
+                                                            <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                        </div>
+                                                        <div className="col-9">
+                                                            <div className="card-body d-flex flex-column h-100">
+                                                                <h5 className="card-title fst-italic purple-700">
+                                                                    {note.title}
+                                                                    <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                                </h5>
+                                                                <p className="card-text flex-grow-1">
+                                                                    {note.content.length > 50
+                                                                        ? `${note.content.substring(0, 50)}...`
+                                                                        : note.content}
+                                                                </p>
+                                                                <p className="card-text mb-1 d-flex justify-content-between">
+                                                                    <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
+                                                                    <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                                </p>
+                                                              
+                                                                {note.firstName && note.lastName && (
+                                                                    <p className="card-text mb-1 mt-2">
+                                                                        <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {note.firstName} {note.lastName}</span>
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className='col-1 d-flex align-items-start flex-column'>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleDownloadNoteUser(note)}>
+                                                                <CloudDownloadIcon color="action" />
+                                                            </button>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleViewNoteUser(note)}>
+                                                                <VisibilityIcon color="info" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className='col-1 d-flex align-items-start flex-column'>
-                                                <button className="btn mb-1 border-0" onClick={() => handleDownloadNoteUser(note)}>
-                                                    <CloudDownloadIcon color="action" />
-                                                </button>
-                                                <button className="btn mb-1 border-0" onClick={() => handleViewNoteUser(note)}>
-                                                    <VisibilityIcon color="info" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                    ) : (
-                        <p>No notes found</p>
+                                        ))
+                                )}
+
+                                <DisplayPublicLink />
+                            </div>
+                        </>
                     )}
-        
-                    <DisplayPublicLink />
+
+                    {publicNotes.length > 6 && (
+                        <div className="text-end mt-3">
+                            <Button variant="primary rounded-pill" style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-explore?type=userpublicnotes")}>
+                                Explore All <ArrowRightIcon />
+                            </Button>
+                        </div>
+                    )}
                 </div>
-        
-                {publicNotes.length > 3 && (
-                    <div className="text-end mt-3">
-                        <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-explore?type=userpublicnotes")}>
-                            Explore All <ArrowRightIcon />
-                        </Button>
-                    </div>
-                )}
-            </div>
             ) : (
                 <div className="container-fluid mt-3">
                     <div className="text-start">
-                        <button className="btn btn-primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate("/user-dashboard")}>
+                        <button className="btn btn-primary rounded-pill" style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate("/user-dashboard")}>
                             <ArrowBackIcon /> Back to Dashboard
                         </button>
                     </div>
-                    <h3 className="mb-3 fw-bold fst-italic purple-700 mt-5">Public Notes & Links </h3>
-                    <div className="row">
-                        {publicNotes.length > 0 ? (
-                            publicNotes
-                            .filter(note => note.user_id !== user.id && note.isPublic === 1)
-                                .map(note => (
-                                    <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
-                                        <div className=" p-1 card shadow" style={{ height: '170px' }}>
-                                            <div className="row g-0 p-1">
-                                                <div className="col-2 d-flex justify-content-center align-items-center">
-                                                    <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                                                </div>
-                                                <div className="col-9">
-                                                    <div className="card-body d-flex flex-column h-100">
-                                                        <h5 className="card-title fst-italic purple-700">
-                                                            {note.title}
-                                                            {note.isPublic === 1 && (
-                                                                <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                                                            )}
-                                                            {note.isPublic === 0 && (
-                                                                <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                                                            )}
-                                                        </h5>
-                                                        <p className="card-text flex-grow-1">{note.content.length > 50
-                                                            ? `${note.content.substring(0, 50)}...`
-                                                            : note.content}</p>
-                                                        {note.user_id !== user.id && note.firstName && note.lastName && (
-                                                            <p className="card-text mb-1">
-                                                                <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
-                                                            </p>
-                                                        )}
-                                                        <p className="card-text mb-1 d-flex justify-content-between">
-                                                            <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
-                                                            <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
-                                                        </p>
+
+                    {publicNotes.length > 0 && (
+                        <>
+                            <h3 className="mb-3 fw-bold fst-italic purple-700 mt-5">Public Notes & Links </h3>
+                            <div className="row">
+                                {
+                                    publicNotes
+                                        .filter(note => note.user_id !== user.id && note.isPublic === true)
+                                        .map(note => (
+                                            <div key={note.id} className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }}>
+                                                <div className=" p-1 card shadow" style={{ height: '170px' }}>
+                                                    <div className="row g-0 p-1">
+                                                        <div className="col-2 d-flex justify-content-center align-items-center">
+                                                            <i className={`bi ${getFileIconClass(note.file_path)}`} style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                                                        </div>
+                                                        <div className="col-9">
+                                                            <div className="card-body d-flex flex-column h-100">
+                                                                <h5 className="card-title fst-italic purple-700">
+                                                                    {note.title}
+                                                                    {note.isPublic === 1 && (
+                                                                        <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                                                    )}
+                                                                    {note.isPublic === 0 && (
+                                                                        <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                                                    )}
+                                                                </h5>
+                                                                <p className="card-text flex-grow-1">{note.content.length > 50
+                                                                    ? `${note.content.substring(0, 50)}...`
+                                                                    : note.content}</p>
+                                                                {note.user_id !== user.id && note.firstName && note.lastName && (
+                                                                    <p className="card-text mb-1">
+                                                                        <small className="text-primary">Shared by: {note.firstName} {note.lastName}</small>
+                                                                    </p>
+                                                                )}
+                                                                <p className="card-text mb-1 d-flex justify-content-between">
+                                                                    <small className="text-muted">{(note.view_count || 0) + (note.other_user_view_count || 0)} Views</small>
+                                                                    <small className="text-muted">{(note.download_count || 0) + (note.other_user_download_count || 0)} Downloads</small>
+                                                                </p>
+                                                                {note.firstName && note.lastName && (
+                                                                    <p className="card-text mb-1 mt-2">
+                                                                        <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {note.firstName} {note.lastName}</span>
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className='col-1 d-flex align-items-start flex-column'>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleDownloadNoteUser(note)}>
+                                                                <CloudDownloadIcon color="action" />
+                                                            </button>
+                                                            <button className="btn mb-1 border-0" onClick={() => handleViewNoteUser(note)}>
+                                                                <VisibilityIcon color="info" />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                <div className='col-1 d-flex align-items-start flex-column'>
-                                                    <button className="btn mb-1 border-0" onClick={() => handleDownloadNoteUser(note)}>
-                                                        <CloudDownloadIcon color="action" />
-                                                    </button>
-                                                    <button className="btn mb-1 border-0" onClick={() => handleViewNoteUser(note)}>
-                                                        <VisibilityIcon color="info" />
-                                                    </button>
-                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                ))
-                        ) : (
-                            <p>No notes found</p>
-                        )}
-                        <DisplayPublicLink />
-
-                    </div>
+                                        ))}
+                                <DisplayPublicLink />
+                            </div>
+                        </>
+                    )}
 
                 </div>
             )}

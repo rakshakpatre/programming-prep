@@ -13,6 +13,7 @@ import AdminQuiz from "./pages/admin/AdminQuiz";
 import AdminQuizList from "./pages/admin/AdminQuizList";
 import AdminFile from "./pages/admin/AdminFile";
 import AuthContext from "./context/AuthContext";
+import AdminReport from "./pages/admin/AdminReport";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
@@ -78,6 +79,11 @@ function App() {
             <Route path="/admin-explore" element={
               <SignedIn>
                 <AdminFile />
+              </SignedIn>
+            } />
+            <Route path="/admin-report" element={
+              <SignedIn>
+                <AdminReport />
               </SignedIn>
             } />
             <Route path="*" element={<RedirectToSignIn />} />

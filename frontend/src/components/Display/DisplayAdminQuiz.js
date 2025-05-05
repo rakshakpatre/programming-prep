@@ -118,18 +118,24 @@ export default function DisplayQuiz() {
                                                         : quiz.QuizDescription}
                                                 </p>
                                             </div>
-                                            <div className="col-2">
-                                                <button className="btn mb-1 border-0" data-bs-toggle="modal"
-                                                    data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
-                                                <button className="btn mb-1 border-0" onClick={() => handleDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
-                                            </div>
+                                            {quiz.isPublished ? ("") : (
+                                                <div className="col-2">
+                                                    <button className="btn mb-1 border-0" data-bs-toggle="modal"
+                                                        data-bs-target="#updateQuiz" onClick={() => setupdateQuizId(quiz.QuizId)}><EditIcon color="success" /></button>
+                                                    <button className="btn mb-1 border-0" onClick={() => handleDelete(quiz.QuizId)}><DeleteIcon color="error" /></button>
+                                                </div>
+                                            )}
 
                                         </div>
                                         <div className="d-flex justify-content-between align-items-center mt-3">
-                                            <span className="text-muted">Quesitions  {questionCounts[quiz.QuizId] || 0}/{quiz.NumberOfQue}</span>
+                                            <div>
+                                                <span className='fw-bold fst-italic'>{quiz.isPublished ? "Published" : "Unpublished"}</span>
+                                                <span> | </span>
+                                                <span className="text-muted">Que. {questionCounts[quiz.QuizId] || 0}/{quiz.NumberOfQue}</span>
+                                            </div>
                                             {questionCounts[quiz.QuizId] >= quiz.NumberOfQue ? (
                                                 <div>
-                                                    <QuizAnalysisPDF quizId={quiz.QuizId} />
+                                                    <QuizAnalysisPDF quizId={quiz.QuizId} isPublished={quiz.isPublished} />
                                                     <button
                                                         type="button"
                                                         className="btn btn-primary rounded-pill mx-2 btn-sm text-white"
@@ -172,3 +178,4 @@ export default function DisplayQuiz() {
         </>
     );
 };
+

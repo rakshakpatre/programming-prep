@@ -8,13 +8,13 @@ const AuthContext = () => {
   const location = useLocation(); // Get current URL location
 
   useEffect(() => {
-    if (!isLoaded || !user) return; // Wait until Clerk is fully loaded
+    if (!isLoaded || !user) return; 
 
-    const role = user?.publicMetadata?.role || "user"; // Default role is "user"
+    const role = user?.publicMetadata?.role || "user"; 
     const path = location.pathname;
 
     // Avoid unnecessary redirects
-    if (role === "admin" && !["/admin-dashboard", "/admin-quiz", "/admin-files", "/admin-quiz-list", "/admin-explore"].includes(path)) {
+    if (role === "admin" && !["/admin-dashboard", "/admin-quiz", "/admin-files", "/admin-quiz-list", "/admin-explore", "/admin-report"].includes(path)) {
       navigate("/admin-dashboard");
     } else if (role !== "admin" && !["/user-dashboard", "/user-quiz", "/user-quiz-exam", "/user-explore", "/user-solved-quiz"].includes(path)) {
       navigate("/user-dashboard");

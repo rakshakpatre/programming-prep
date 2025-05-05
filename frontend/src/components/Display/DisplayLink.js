@@ -126,7 +126,6 @@ function DisplayLink() {
     );
     return match ? match[1] : null;
   };
-
   return (
     <>
       <AddLink fetchLinks={fetchLinks} />
@@ -134,14 +133,12 @@ function DisplayLink() {
       {location.pathname === "/user-dashboard" ? (
         <div className="container mt-3">
           <div className="row">
-            {loading ? (
-              <p>Loading links...</p>
-            ) : (
+            {links.length > 0 && (
               <>
-                {links.length > 0 ? (
+                <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
+                {(
                   links.slice(0, visibleLinks).map((link) => (
                     <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                      <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
                       <div className=" p-1 card shadow">
                         <div className="row g-0 p-1">
                           <div className="col-2 d-flex justify-content-center align-items-center">
@@ -202,17 +199,14 @@ function DisplayLink() {
                         </div>
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <p>No links found</p>
-                )}
+                  )))}
               </>
             )}
           </div>
           {/* View More / View Less Buttons */}
-          {links.length > 3 && (
+          {links.length > 0 && (
             <div className="text-end mt-3">
-              <Button variant="primary rounded-pill" style={{boxShadow: "gray 1px 1px 8px 1px"}} onClick={() => navigate('/user-explore?type=links')}>
+              <Button variant="primary rounded-pill" style={{ boxShadow: "gray 1px 1px 8px 1px" }} onClick={() => navigate('/user-explore?type=links')}>
                 Explore All <ArrowRightIcon />
               </Button>
             </div>
@@ -220,77 +214,75 @@ function DisplayLink() {
         </div>
       ) : (
         <div className="container-fluid mt-3">
-          <div className="row">
+          {links.length > 0 && (
             <>
               <h2 className="fst-italic purple-700 fw-bold mt-3">My Links</h2>
-              {links.length > 0 ? (
-                links.map((link) => (
-                  <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                    <div className=" p-1 card shadow">
-                      <div className="row g-0 p-1">
-                        <div className="col-2 d-flex justify-content-center align-items-center">
-                          <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                        </div>
-                        <div className="col-9">
-                          <div className="card-body d-flex flex-column h-100">
-                            <h5 className="card-title fst-italic purple-700">
-                              {link.linktitle}
-                              {link.isPublic === true && (
-                                <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                              )}
-                              {link.isPublic === false && (
-                                <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                              )}
-                            </h5>
-                            <a
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-decoration-none text-primary d-flex align-items-center"
-                            >
-                              {link.url.length > 30
-                                ? `${link.url.substring(0, 30)}...`
-                                : link.url}
-                            </a>
-                            <p className="card-text hello">{link.linkcontent.length > 30 ? `${link.linkcontent.substring(0, 30)}...` : link.linkcontent}</p>
-                            <p className="card-text mb-1 d-flex justify-content-between">
-                              <small className="text-muted">{(link.view_count || 0)} Views</small>
-                            </p>
+              <div className="row">
+                {
+                  links.map((link) => (
+                    <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
+                      <div className=" p-1 card shadow">
+                        <div className="row g-0 p-1">
+                          <div className="col-2 d-flex justify-content-center align-items-center">
+                            <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
                           </div>
-                        </div>
-                        <div className='col-1 d-flex align-items-start flex-column'>
+                          <div className="col-9">
+                            <div className="card-body d-flex flex-column h-100">
+                              <h5 className="card-title fst-italic purple-700">
+                                {link.linktitle}
+                                {link.isPublic === true && (
+                                  <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                                )}
+                                {link.isPublic === false && (
+                                  <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                                )}
+                              </h5>
+                              <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-decoration-none text-primary d-flex align-items-center"
+                              >
+                                {link.url.length > 30
+                                  ? `${link.url.substring(0, 30)}...`
+                                  : link.url}
+                              </a>
+                              <p className="card-text hello">{link.linkcontent.length > 30 ? `${link.linkcontent.substring(0, 30)}...` : link.linkcontent}</p>
+                              <p className="card-text mb-1 d-flex justify-content-between">
+                                <small className="text-muted">{(link.view_count || 0)} Views</small>
+                              </p>
+                            </div>
+                          </div>
+                          <div className='col-1 d-flex align-items-start flex-column'>
 
-                          <button
-                            className="btn btn mb-1 border-0"
-                            onClick={() => copyToClipboard(link.url)}
-                          >
-                            <ContentPasteIcon />
-                          </button>
-                          <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
-                            <VisibilityIcon color="info" />
-                          </button>
-                          {/* Only show edit and delete buttons for the user's own files */}
-                          {link.user_id === user.id && (
-                            <>
-                              <button className="btn mb-1 border-0" onClick={() => handleEditLink(link)}>
-                                <EditIcon color="success" />
-                              </button>
-                              <button className="btn mb-1 border-0" onClick={() => handleDelete(link.id)}>
-                                <DeleteIcon color="error" />
-                              </button>
-                            </>
-                          )}
+                            <button
+                              className="btn btn mb-1 border-0"
+                              onClick={() => copyToClipboard(link.url)}
+                            >
+                              <ContentPasteIcon />
+                            </button>
+                            <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
+                              <VisibilityIcon color="info" />
+                            </button>
+                            {/* Only show edit and delete buttons for the user's own files */}
+                            {link.user_id === user.id && (
+                              <>
+                                <button className="btn mb-1 border-0" onClick={() => handleEditLink(link)}>
+                                  <EditIcon color="success" />
+                                </button>
+                                <button className="btn mb-1 border-0" onClick={() => handleDelete(link.id)}>
+                                  <DeleteIcon color="error" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <p>No links found</p>
-              )}
+                  ))}
+              </div>
             </>
-
-          </div>
+          )}
         </div>
       )}
 

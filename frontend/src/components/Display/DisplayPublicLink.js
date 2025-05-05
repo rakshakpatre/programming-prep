@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import {useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { Modal } from "react-bootstrap";
 import { useUser } from "@clerk/clerk-react";
@@ -30,7 +30,7 @@ function DisplayPublicLink() {
         const uniqueLinks = data.filter(
           (link, index, self) => index === self.findIndex((l) => l.id === link.id)
         );
-
+        console.log("Fetched public links:", data); // 👈 Add this line
         setLinks(uniqueLinks);
       } catch (error) {
         console.error("Error fetching links:", error);
@@ -103,70 +103,10 @@ function DisplayPublicLink() {
     <>
       {location.pathname === "/user-dashboard" ? (
         <>
-        {links.length > 0 ? (
-          links
-            .filter(link => link.user_id !== user.id && link.isPublic === true)
-            .slice(0, visibleLinks).map((link) => (
-              <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
-                <div className=" p-1 card shadow">
-                  <div className="row g-0 p-1">
-                    <div className="col-2 d-flex justify-content-center align-items-center">
-                      <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
-                    </div>
-                    <div className="col-9">
-                      <div className="card-body d-flex flex-column h-100">
-                        <h5 className="card-title fst-italic purple-700">
-                          {link.linktitle}
-                          {link.isPublic === 1 && (
-                            <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
-                          )}
-                          {link.isPublic === 0 && (
-                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
-                          )}
-                        </h5>
-                        <a
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-decoration-none text-primary d-flex align-items-center"
-                        >
-                          {link.url.length > 30
-                            ? `${link.url.substring(0, 30)}...`
-                            : link.url}
-                        </a>
-                        <p className="card-text">{link.linkcontent.length > 40 ? `${link.linkcontent.substring(0, 40)}...` : link.linkcontent}</p>
-                        <p className="card-text mb-1 d-flex justify-content-between">
-                          <small className="text-muted">{(link.view_count || 0)} Views</small>
-                        </p>
-                      </div>
-                    </div>
-                    <div className='col-1 d-flex align-items-start flex-column'>
-                      <button
-                        className="btn btn mb-1 border-0"
-                        onClick={() => copyToClipboard(link.url)}
-                      >
-                        <ContentPasteIcon />
-                      </button>
-                      <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
-                        <VisibilityIcon color="info" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-        ) : (
-          <p>No links found</p>
-        )
-      }
-      </>
-      ) : (
-        <>
-        { 
-          links.length > 0 ? (
+          {(
             links
-              .filter(link => link.user_id !== user.id && link.isPublic === 1)
-              .map((link) => (
+              .filter(link => link.user_id !== user.id && link.isPublic === true)
+              .slice(0, visibleLinks).map((link) => (
                 <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
                   <div className=" p-1 card shadow">
                     <div className="row g-0 p-1">
@@ -198,6 +138,13 @@ function DisplayPublicLink() {
                           <p className="card-text mb-1 d-flex justify-content-between">
                             <small className="text-muted">{(link.view_count || 0)} Views</small>
                           </p>
+
+                          {link.firstName && link.lastName && (
+                            <p className="card-text mb-1 mt-2">
+                              <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {link.firstName} {link.lastName}</span>
+                            </p>
+                          )}
+
                         </div>
                       </div>
                       <div className='col-1 d-flex align-items-start flex-column'>
@@ -215,10 +162,66 @@ function DisplayPublicLink() {
                   </div>
                 </div>
               ))
-          ) : (
-            <p>No links found</p>
-          )
-        }
+          )}
+        </>
+      ) : (
+        <>
+          {links.filter(link => link.user_id !== user.id && link.isPublic === true)
+            .map((link) => (
+              <div className="col-sm-6 col-md-4 mb-3" style={{ maxWidth: '540px' }} key={link.id}>
+                <div className=" p-1 card shadow">
+                  <div className="row g-0 p-1">
+                    <div className="col-2 d-flex justify-content-center align-items-center">
+                      <i className="bi bi-link-45deg" style={{ fontSize: '80px', fontWeight: '900' }}></i>
+                    </div>
+                    <div className="col-9">
+                      <div className="card-body d-flex flex-column h-100">
+                        <h5 className="card-title fst-italic purple-700">
+                          {link.linktitle}
+                          {link.isPublic === 1 && (
+                            <span className="badge bg-success ms-2" style={{ fontSize: '0.6rem' }}>Public</span>
+                          )}
+                          {link.isPublic === 0 && (
+                            <span className="badge bg-secondary ms-2" style={{ fontSize: '0.6rem' }}>Private</span>
+                          )}
+                        </h5>
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-decoration-none text-primary d-flex align-items-center"
+                        >
+                          {link.url.length > 30
+                            ? `${link.url.substring(0, 30)}...`
+                            : link.url}
+                        </a>
+                        <p className="card-text">{link.linkcontent.length > 40 ? `${link.linkcontent.substring(0, 40)}...` : link.linkcontent}</p>
+                        <p className="card-text mb-1 d-flex justify-content-between">
+                          <small className="text-muted">{(link.view_count || 0)} Views</small>
+                        </p>
+
+                        {link.firstName && link.lastName && (
+                            <p className="card-text mb-1 mt-2">
+                              <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {link.firstName} {link.lastName}</span>
+                            </p>
+                          )}
+                      </div>
+                    </div>
+                    <div className='col-1 d-flex align-items-start flex-column'>
+                      <button
+                        className="btn btn mb-1 border-0"
+                        onClick={() => copyToClipboard(link.url)}
+                      >
+                        <ContentPasteIcon />
+                      </button>
+                      <button className="btn mb-1 border-0" onClick={() => handleViewLink(link)}>
+                        <VisibilityIcon color="info" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
         </>
       )}
 

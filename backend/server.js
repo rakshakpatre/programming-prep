@@ -104,10 +104,32 @@ app.get("/api/notes/public", async (req, res) => {
             .orderBy("created_at", "desc")
             .get();
 
-        const publicNotes = notesSnapshot.docs.map(doc => ({
+        const notes = notesSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
+
+        // Get unique user_ids
+        const userIds = [...new Set(notes.map(note => note.user_id))];
+
+        // Fetch user details for all user_ids
+        const usersSnapshot = await db1.collection("Users").get();
+        const userMap = {};
+        usersSnapshot.forEach(doc => {
+            const user = doc.data();
+            userMap[user.UserId] = {
+                firstName: user.FirstName,
+                lastName: user.LastName
+            };
+        });
+
+        // Enrich notes with user names
+        const publicNotes = notes.map(note => ({
+            ...note,
+            firstName: userMap[note.user_id]?.firstName || null,
+            lastName: userMap[note.user_id]?.lastName || null
+        }));
+
         res.json(publicNotes);
     } catch (error) {
         console.error("Error fetching public notes:", error);
@@ -132,6 +154,7 @@ app.post("/api/links/addLink", async (req, res) => {
             linkcontent,
             user_id,
             url,
+            view_count: 0,
             isPublic: isPublicBool,
             IsActive: true,
             created_at: new Date()
@@ -184,9 +207,31 @@ app.get("/api/links/public", async (req, res) => {
             .orderBy("created_at", "desc")
             .get();
 
-        const publicLinks = linksSnapshot.docs.map(doc => ({
+        const links = linksSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
+        }));
+
+        const userIds = [...new Set(links.map(link => link.user_id))];
+
+        // Get only necessary users instead of all
+        const usersSnapshot = await db1.collection("Users")
+            .where("UserId", "in", userIds)
+            .get();
+
+        const userMap = {};
+        usersSnapshot.forEach(doc => {
+            const user = doc.data();
+            userMap[user.UserId] = {
+                firstName: user.FirstName,
+                lastName: user.LastName
+            };
+        });
+
+        const publicLinks = links.map(link => ({
+            ...link,
+            firstName: userMap[link.user_id]?.firstName || null,
+            lastName: userMap[link.user_id]?.lastName || null
         }));
 
         res.json(publicLinks);
@@ -195,7 +240,6 @@ app.get("/api/links/public", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch public links" });
     }
 });
-
 
 
 //------------------------- Delete Notes -----------------------------
@@ -506,6 +550,7 @@ app.post("/addQuiz", async (req, res) => {
             QuizName: title,
             QuizDescription: description,
             NumberOfQue: parseInt(noOfQue),
+            isPublished:false,
             IsActive: true,
             createdAt: new Date(),
         });
@@ -707,6 +752,25 @@ app.put('/soft-delete-quiz/:id', async (req, res) => {
     }
 });
 
+app.put('/publish-quiz/:quizId', async (req, res) => {
+    const { quizId } = req.params;
+    const { endDate } = req.body;
+
+    try {
+        const quizRef = db1.collection('Quiz').doc(quizId);
+
+        await quizRef.update({
+            EndDate: admin.firestore.Timestamp.fromDate(new Date(endDate)),
+            StartDate: new Date(),
+            isPublished: true
+        });
+
+        res.json({ success: true, message: "Quiz published successfully" });
+    } catch (error) {
+        console.error("Error publishing quiz:", error);
+        res.status(500).json({ success: false, message: "Error publishing quiz" });
+    }
+});
 
 
 app.put('/soft-delete-question/:id', async (req, res) => {
@@ -899,24 +963,48 @@ app.get("/api/admin-notes", async (req, res) => {
 
 app.get("/api/admin-notes/public", async (req, res) => {
     try {
-        const notesRef = db1.collection("Admin_notes");
-        const snapshot = await notesRef
-            .where("isPublic", "==", true)
-            .where("IsActive", "==", true)
-            .orderBy("createdAt", "desc")
-            .get();
-
-        const publicNotes = [];
-        snapshot.forEach(doc => {
-            publicNotes.push({ id: doc.id, ...doc.data() });
-        });
-
-        res.json(publicNotes);
+      const notesRef = db1.collection("Admin_notes");
+      const snapshot = await notesRef
+        .where("isPublic", "==", true)
+        .where("IsActive", "==", true)
+        .orderBy("createdAt", "desc")
+        .get();
+  
+      const publicNotes = [];
+      snapshot.forEach(doc => {
+        publicNotes.push({ id: doc.id, ...doc.data() });
+      });
+  
+      // Fetch all users
+      const usersSnapshot = await db1.collection("Users").get();
+      const userMap = {};
+      usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        // ✅ Use UserId field inside the document as the key
+        if (user.UserId) {
+          userMap[user.UserId] = {
+            firstName: user.FirstName,
+            lastName: user.LastName,
+          };
+        }
+      });
+  
+      // Enrich each note with user details using admin_id
+      const adminPublicNotes = publicNotes.map(note => ({
+        ...note,
+        firstName: userMap[note.admin_id]?.firstName || null,
+        lastName: userMap[note.admin_id]?.lastName || null,
+      }));
+  
+      res.json(adminPublicNotes);
     } catch (error) {
-        console.error("Error fetching public notes:", error);
-        res.status(500).json({ error: "Failed to fetch public notes" });
+      console.error("Error fetching public notes:", error);
+      res.status(500).json({ error: "Failed to fetch public notes" });
     }
-});
+  });
+  
+  
+
 
 //--------------------- Increment view count for a other Admin note Server code------------------------
 
@@ -1109,6 +1197,7 @@ app.get("/api/admin-links", async (req, res) => {
             links.push({ id: doc.id, ...doc.data() });
         });
 
+
         res.json(links);
     } catch (error) {
         console.error("Error fetching links:", error);
@@ -1133,7 +1222,28 @@ app.get("/api/admin-links/public", async (req, res) => {
             publicLinks.push({ id: doc.id, ...doc.data() });
         });
 
-        res.json(publicLinks);
+        // Fetch all users
+      const usersSnapshot = await db1.collection("Users").get();
+      const userMap = {};
+      usersSnapshot.forEach(doc => {
+        const user = doc.data();
+        // ✅ Use UserId field inside the document as the key
+        if (user.UserId) {
+          userMap[user.UserId] = {
+            firstName: user.FirstName,
+            lastName: user.LastName,
+          };
+        }
+      });
+  
+      // Enrich each note with user details using admin_id
+      const adminPublicLinks = publicLinks.map(link => ({
+        ...link,
+        firstName: userMap[link.admin_id]?.firstName || null,
+        lastName: userMap[link.admin_id]?.lastName || null,
+      }));
+
+        res.json(adminPublicLinks);
     } catch (error) {
         console.error("Error fetching public links:", error);
         res.status(500).json({ error: "Failed to fetch public links" });
@@ -1551,6 +1661,23 @@ app.get('/get-quiz-analysis/:quizId', async (req, res) => {
 });
 
 
+app.get('/get-quiz-isPublished/:quizId', async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz document
+        const quizDoc = await db1.collection('Quiz').doc(quizId).get();
+        if (!quizDoc.exists) return res.status(404).json({ message: 'Quiz not found' });
+
+        const quiz = { QuizId: quizDoc.id, ...quizDoc.data() };
+        res.json({ quiz });
+
+    } catch (error) {
+        console.error("Error in /get-quiz-analysis:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 app.get('/api/quiz-results/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -1580,9 +1707,6 @@ app.get('/api/quiz-results/:userId', async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-
-
-
 
 
 app.post('/clerk/webhook', express.json(), async (req, res) => {
@@ -1636,7 +1760,7 @@ app.post('/clerk/webhook', express.json(), async (req, res) => {
 
         else if (event.type === 'user.deleted') {
             const userSnapshot = await db1.collection('Users')
-                .where('UserId', '==', userId)
+                .where('user_id', '==', userId)
                 .limit(1)
                 .get();
         
@@ -1655,6 +1779,102 @@ app.post('/clerk/webhook', express.json(), async (req, res) => {
         res.status(500).send('Error handling Clerk webhook');
     }
 });
+
+// Fetch notes for a specific user between dates
+app.get("/api/date-wise-notes", async (req, res) => {
+    const { user_id, from, to } = req.query;
+  
+    if (!user_id || !from || !to) {
+      return res.status(400).json({ error: "Missing user_id or date range" });
+    }
+  
+    try {
+      const fromDate = admin.firestore.Timestamp.fromDate(new Date(from));
+      const toDate = admin.firestore.Timestamp.fromDate(new Date(to));
+  
+      const notesRef = db1.collection("notes");
+      const snapshot = await notesRef
+        .where("user_id", "==", user_id)
+        .where("created_at", ">=", fromDate)
+        .where("created_at", "<=", toDate)
+        .get();
+  
+      if (snapshot.empty) {
+        return res.status(200).json([]);
+      }
+  
+      const notes = [];
+      snapshot.forEach((doc) => {
+        notes.push({ id: doc.id, ...doc.data() });
+      });
+  
+      res.status(200).json(notes);
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+      res.status(500).json({ error: "Failed to fetch notes" });
+    }
+  });
+
+
+  // Fetch notes for a specific user between dates
+app.get("/api/date-wise-links", async (req, res) => {
+    const { user_id, from, to } = req.query;
+  
+    if (!user_id || !from || !to) {
+      return res.status(400).json({ error: "Missing user_id or date range" });
+    }
+  
+    try {
+      const fromDate = admin.firestore.Timestamp.fromDate(new Date(from));
+      const toDate = admin.firestore.Timestamp.fromDate(new Date(to));
+  
+      const notesRef = db1.collection("links");
+      const snapshot = await notesRef
+        .where("user_id", "==", user_id)
+        .where("created_at", ">=", fromDate)
+        .where("created_at", "<=", toDate)
+        .get();
+  
+      if (snapshot.empty) {
+        return res.status(200).json([]);
+      }
+  
+      const links = [];
+      snapshot.forEach((doc) => {
+        links.push({ id: doc.id, ...doc.data() });
+      });
+  
+      res.status(200).json(links);
+    } catch (error) {
+      console.error("Error fetching links:", error);
+      res.status(500).json({ error: "Failed to fetch links" });
+    }
+  });
+  
+  
+// In your Express backend (e.g., app.js or routes/users.js)
+app.get('/api/users', async (req, res) => {
+    try {
+      const usersRef = db1.collection('Users');
+      const snapshot = await usersRef.where('IsActive', '==', true).get();
+  
+      if (snapshot.empty) {
+        return res.status(200).json([]);
+      }
+  
+      const users = [];
+      snapshot.forEach(doc => {
+        users.push({ id: doc.id, ...doc.data() });
+      });
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+  
+
+
 
 
 //-------------------------- Start Server----------------------------

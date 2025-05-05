@@ -130,6 +130,11 @@ function AdminDisplayPublicLink() {
                         <p className="card-text mb-1 d-flex justify-content-between">
                           <small className="text-muted">{(link.view_count || 0)} Views</small>
                         </p>
+                        {link.firstName && link.lastName && (
+                            <p className="card-text mb-1 mt-2">
+                              <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {link.firstName} {link.lastName}</span>
+                            </p>
+                          )}
                       </div>
                     </div>
                     <div className='col-1 d-flex align-items-start flex-column'>

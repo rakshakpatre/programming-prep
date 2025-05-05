@@ -33,6 +33,9 @@ export default function Navbar() {
                                         <li className="nav-item">
                                             <Link className={`nav-link ${location.pathname === "/admin-explore" ? "active" : ""}`} to="/admin-explore">Explore</Link>
                                         </li>
+                                        <li className="nav-item">
+                                            <Link className={`nav-link ${location.pathname === "/admin-report" ? "active" : ""}`} to="/admin-report">Report</Link>
+                                        </li>
                                     </ul>
                                 ) : (
                                     <ul className="navbar-nav">
