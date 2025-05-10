@@ -16,7 +16,7 @@ export default function Card() {
         // Fetch public notes
         const fetchNotes = async () => {
             try {
-                const response = await axios.get("http://localhost:5000/api/notes/public");
+                const response = await axios.get("https://programming-prep.onrender.com/api/notes/public");
                 setNotes(response.data);
             } catch (error) {
                 console.error("Error fetching notes:", error);
