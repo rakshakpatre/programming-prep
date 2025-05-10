@@ -40,7 +40,7 @@ export default function Card() {
     const handleViewNote = async (note) => {
         try {
             // Increment view count on the server
-            const response = await fetch(`http://localhost:5000/api/notes/public/${note.id}/view`, {
+            const response = await fetch(`https://programming-prep.onrender.com/api/notes/public/${note.id}/view`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 // body: JSON.stringify({ userId }),
@@ -139,7 +139,7 @@ export default function Card() {
             {/* ✅ File Viewer Modal */}
             <FileViewerModal
                 modalRef={modalRef}
-                fileURL={selectedNote ? `http://localhost:5000/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
+                fileURL={selectedNote ? `https://programming-prep.onrender.com/${selectedNote.file_path.startsWith('/') ? selectedNote.file_path.substring(1) : selectedNote.file_path}` : ""}
                 fileType="docx"
                 title={selectedNote?.title}
                 content={selectedNote?.content}
