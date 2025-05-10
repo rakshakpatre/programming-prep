@@ -195,11 +195,6 @@ function AdminDisplayPublicNote() {
                                                             <small className="text-muted">{(note.view_count || 0)} Views</small>
                                                             <small className="text-muted">{(note.download_count || 0)} Downloads</small>
                                                         </p>
-                                                        {note.firstName && note.lastName && (
-                                                            <p className="card-text mb-1 mt-2">
-                                                                <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {note.firstName} {note.lastName}</span>
-                                                            </p>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className='col-1 d-flex align-items-start flex-column'>
@@ -264,11 +259,6 @@ function AdminDisplayPublicNote() {
                                                             <small className="text-muted">{(note.view_count || 0)} Views</small>
                                                             <small className="text-muted">{(note.download_count || 0)} Downloads</small>
                                                         </p>
-                                                        {note.firstName && note.lastName && (
-                                                            <p className="card-text mb-1 mt-2">
-                                                                <span className="mb-3 fst-italic purple-700 fw-bold">Shared by - {note.firstName} {note.lastName}</span>
-                                                            </p>
-                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className='col-1 d-flex align-items-start flex-column'>
